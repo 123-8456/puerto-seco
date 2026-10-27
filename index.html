@@ -1,379 +1,157 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Análisis estadístico · Puerto Seco</title>
+<title>Puerto Seco | Analítica de picking</title>
 <style>
-:root{--navy:#0f2f46;--blue:#1b6a9c;--or:#f28c1e;--bg:#eef2f5;--tx:#17252f;--mut:#5a6a76;--ok:#1d9a57;--bad:#d2453d;--ln:#d5dee5}
-*{box-sizing:border-box}
-body{margin:0;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.45}
-header{background:var(--navy);color:#fff;padding:16px 16px 10px;border-bottom:4px solid var(--or)}
-header h1{margin:0;font-size:1.2rem}
-header small{color:#a9bfce}
-nav{display:flex;background:var(--navy);position:sticky;top:0;z-index:5;overflow-x:auto}
-nav button{flex:1;min-width:96px;background:none;border:0;color:#a9bfce;padding:12px 6px;font:inherit;border-bottom:3px solid transparent;cursor:pointer}
-nav button.on{color:#fff;border-color:var(--or);font-weight:700}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--or);outline-offset:1px}
-main{max-width:980px;margin:0 auto;padding:14px}
-section{display:none}section.on{display:block}
-.card{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:14px;margin-bottom:14px}
-h2{margin:0 0 10px;font-size:1.05rem;color:var(--navy)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-label{font-size:.8rem;color:var(--mut);display:block;margin-bottom:3px}
-input,select,textarea{width:100%;padding:9px;border:1px solid var(--ln);border-radius:6px;font:inherit;background:#fff}
-textarea{min-height:110px;font-family:ui-monospace,Consolas,monospace;font-size:.8rem}
-.btn{background:var(--blue);color:#fff;border:0;border-radius:6px;padding:10px 14px;font:inherit;cursor:pointer}
-.btn.o{background:var(--or);color:#1b1100}.btn.g{background:#e3ebf1;color:var(--navy)}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.tw{overflow:auto;max-height:340px}
-table{border-collapse:collapse;width:100%;font-size:.85rem}
-th,td{padding:6px 10px;border-bottom:1px solid var(--ln);text-align:left;white-space:nowrap}
-th{background:#e8eff4;position:sticky;top:0}
-.kpi{background:#f5f8fa;border:1px solid var(--ln);border-left:4px solid var(--blue);border-radius:6px;padding:10px}
-.kpi b{display:block;font-size:1.3rem;color:var(--navy)}.kpi span{font-size:.78rem;color:var(--mut)}
-.kpi.ok{border-left-color:var(--ok)}.kpi.ok b{color:var(--ok)}
-.kpi.bad{border-left-color:var(--bad)}.kpi.bad b{color:var(--bad)}
-canvas{width:100%;height:260px;display:block}
-.rec{border-left:4px solid var(--or);padding:8px 12px;margin:8px 0;background:#fff6ea;border-radius:0 6px 6px 0}
-.rec.ok{border-color:var(--ok);background:#eef9f2}.rec.bad{border-color:var(--bad);background:#fdf0ef}
-.msg{font-size:.85rem;color:var(--mut);margin-top:8px}
-.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}ul{padding-left:18px;margin:0}li{margin-bottom:8px}.pill{display:inline-block;font-size:.72rem;padding:1px 9px;border-radius:10px;color:#fff;background:var(--blue)}.pill.Alta{background:var(--bad)}.pill.Media{background:var(--or);color:#1b1100}.pill.Baja{background:var(--ok)}
+:root{--navy:#10253f;--navy2:#17385a;--teal:#13a89e;--yellow:#f4c542;--ink:#1b2b3a;--muted:#66788a;--bg:#f3f6fa;--white:#fff;--red:#d9534f;--line:#e2e9f0;--shadow:0 12px 30px rgba(20,43,70,.08)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:11px 16px;font-weight:700;transition:.18s}button:hover{transform:translateY(-1px)}.primary{background:var(--teal);color:white}.secondary{background:#e8f5f4;color:#087e78}.darkbtn{background:var(--navy);color:white}.quiet{background:#edf1f6;color:var(--navy)}.wrap{width:min(1180px,calc(100% - 36px));margin:auto}.topbar{background:var(--navy);color:#fff;position:sticky;top:0;z-index:10;box-shadow:0 4px 18px #0c1d3020}.nav{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:70px}.brand{display:flex;align-items:center;gap:11px;font-weight:850;letter-spacing:.2px}.brandmark{display:grid;place-items:center;background:var(--yellow);color:var(--navy);width:39px;height:39px;border-radius:12px;font-size:20px}.navlinks{display:flex;gap:8px;align-items:center}.navlinks a{padding:10px 13px;border-radius:10px;color:#dce7f3;font-weight:650}.navlinks a:hover{background:#ffffff16;color:white}.menuBtn{display:none;background:#ffffff17;color:white}.hero{background:radial-gradient(circle at 90% 10%,#1c6b7a 0,transparent 34%),linear-gradient(120deg,#10253f,#17385a);color:#fff;padding:58px 0 48px;overflow:hidden;position:relative}.heroGrid{display:grid;grid-template-columns:1.25fr .75fr;align-items:center;gap:30px}.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#baf1e9;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;font-size:12px}.eyebrow:before{content:"";width:23px;height:3px;background:var(--yellow);border-radius:4px}h1{font-size:clamp(32px,4vw,52px);line-height:1.08;letter-spacing:-1.3px;margin:15px 0}.hero p{color:#d7e3f0;font-size:17px;max-width:650px}.heroActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.hero .secondary{background:#ffffff17;color:white;border:1px solid #ffffff35}.heroArt{width:100%;max-width:400px;justify-self:end}.heroStats{display:flex;gap:24px;flex-wrap:wrap;margin-top:27px}.heroStat strong{display:block;font-size:22px}.heroStat span{font-size:12px;color:#b9cadd}.section{padding:44px 0;scroll-margin-top:85px}.sectionHead{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}.kicker{color:#078b84;font-size:12px;text-transform:uppercase;letter-spacing:1.3px;font-weight:850}.section h2{font-size:clamp(24px,3vw,32px);letter-spacing:-.7px;margin:4px 0}.lead{color:var(--muted);margin:0;max-width:760px}.pill{display:inline-flex;align-items:center;gap:7px;border-radius:99px;padding:7px 11px;background:#e6f6f4;color:#087d76;font-weight:750;font-size:12px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card,.panel,.stepCard,.alt{background:white;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.card{padding:19px}.cardTop{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-weight:700;font-size:13px}.ico{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#e9f5f4;color:#078b84;font-size:19px}.metric{font-size:30px;font-weight:850;letter-spacing:-.8px;margin:12px 0 2px}.metric small{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:0}.submetric{font-size:12px;color:var(--muted)}.panel{padding:22px}.twoCol{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.fieldGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:750;color:#42566b}.field input,.field select,.pastebox{width:100%;border:1px solid #d8e2ec;border-radius:11px;padding:11px 12px;background:#fbfcfe;color:var(--ink);outline:none}.field input:focus,.field select:focus,.pastebox:focus{border-color:var(--teal);box-shadow:0 0 0 3px #13a89e20}.uploadZone{border:1.5px dashed #a9bdce;border-radius:15px;padding:22px;text-align:center;background:#f8fbfd}.uploadIcon{font-size:27px}.uploadZone p{margin:5px 0 13px;color:var(--muted);font-size:13px}.uploadControls{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}.fileInput{max-width:100%;background:white;border:1px solid var(--line);border-radius:10px;padding:8px}.status{font-size:13px;margin-top:13px;color:var(--muted)}.status.good{color:#087d76;font-weight:700}.status.bad{color:#b63c38;font-weight:700}.pastebox{min-height:110px;resize:vertical;margin-top:12px}.chart{width:100%;min-height:230px;display:block}.chartLegend{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}.legendDot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.verdict{border-radius:14px;background:#eef7f6;border:1px solid #cdece8;padding:16px 18px;margin-top:18px}.verdict strong{display:block;margin-bottom:3px}.verdict p{margin:0;color:#4d6674}.processGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.stepCard{padding:17px 13px;box-shadow:none;position:relative}.stepNum{display:grid;place-items:center;width:33px;height:33px;border-radius:11px;background:var(--navy);color:white;font-weight:850;margin-bottom:14px}.stepCard:nth-child(1) .stepNum,.stepCard:nth-child(6) .stepNum{background:var(--teal)}.stepCard h3{font-size:14px;margin:0 0 6px}.stepCard p{font-size:12px;color:var(--muted);margin:0}.alts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.alt{padding:22px}.altHead{display:flex;align-items:start;gap:12px}.altBadge{display:grid;place-items:center;min-width:40px;height:40px;border-radius:13px;background:#fff3ca;color:#745400;font-weight:900}.alt:nth-child(2) .altBadge{background:#e2f4f2;color:#087d76}.alt h3{margin:1px 0 6px;font-size:18px}.alt p{margin:0;color:var(--muted)}.alt ul{padding-left:18px;color:#43596d;font-size:13px}.simGrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}.rangeRow{margin:17px 0}.rangeRow label{display:flex;justify-content:space-between;font-weight:750;font-size:13px;margin-bottom:9px}.rangeRow input{width:100%;accent-color:var(--teal)}.presetRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.presetRow button{font-size:12px;padding:9px 12px}.simResult{border-radius:16px;background:var(--navy);color:white;padding:23px}.simResult .metric{font-size:34px}.simResult p{color:#c9d8e6;font-size:13px}.footer{background:#0c1d30;color:#d3deea;padding:28px 0;margin-top:20px}.footerInner{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px}.small{font-size:12px;color:var(--muted)}.hidden{display:none!important}
+@media(max-width:850px){.heroGrid{grid-template-columns:1fr}.heroArt{display:none}.cards{grid-template-columns:repeat(2,1fr)}.processGrid{grid-template-columns:repeat(3,1fr)}.fieldGrid{grid-template-columns:repeat(2,1fr)}.twoCol{grid-template-columns:1fr}.sectionHead{align-items:start;flex-direction:column}}
+@media(max-width:560px){.wrap{width:min(100% - 24px,1180px)}.nav{min-height:62px}.menuBtn{display:block}.navlinks{display:none;position:absolute;top:62px;left:0;right:0;background:var(--navy);padding:10px 14px 16px;flex-direction:column;align-items:stretch}.navlinks.open{display:flex}.navlinks a{padding:12px}.hero{padding:39px 0}.hero p{font-size:15px}.heroStats{gap:17px}.cards{gap:10px}.card{padding:14px}.metric{font-size:25px}.fieldGrid{grid-template-columns:1fr}.processGrid{grid-template-columns:repeat(2,1fr)}.alts,.simGrid{grid-template-columns:1fr}.panel{padding:16px}.section{padding:32px 0}.sectionHead{margin-bottom:16px}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
-<header><h1 id="ttl">Análisis estadístico</h1><small id="sub"></small></header>
-<nav>
-<button data-t="datos" class="on">Datos</button>
-<button data-t="est">Estadística</button>
-<button data-t="graf">Gráficos</button>
-<button data-t="rec">Recomendaciones</button>
-</nav>
-<main>
-<section id="s-datos" class="on">
-<div class="card"><h2>Datos de la empresa y del proceso</h2>
-<div class="grid">
-<div><label for="empresa">Empresa</label><input id="empresa"></div>
-<div><label for="variable">Variable</label><input id="variable"></div>
-<div><label for="unidad">Unidad</label><input id="unidad"></div>
-<div><label for="mejor">¿Qué es mejor?</label><select id="mejor"><option value="menor">Menor valor</option><option value="mayor">Mayor valor</option></select></div>
-<div><label for="lim">Límite de especificación</label><input id="lim" type="number" step="any"></div>
-<div><label for="meta">Meta de la empresa</label><input id="meta" type="number" step="any"></div>
+<div class="topbar"><div class="wrap nav">
+ <a class="brand" href="#inicio"><span class="brandmark">P</span><span>PUERTO SECO<small style="display:block;color:#afc3d8;font-size:10px;letter-spacing:1.4px">ANALÍTICA DE OPERACIONES</small></span></a>
+ <button class="menuBtn" id="menuBtn" aria-label="Abrir menú">☰ Menú</button>
+ <div class="navlinks" id="navlinks"><a href="#proceso">Proceso</a><a href="#datos">Indicadores</a><a href="#mejoras">Mejoras</a><a href="#simulador">Simulador</a></div>
 </div></div>
-<div class="card"><h2>Cargar datos (CSV)</h2>
-<label for="txt">Pega aquí tus datos (con o sin encabezado; separa con coma o punto y coma)</label>
-<textarea id="txt" placeholder="pedido,tiempo_min&#10;1,23.5&#10;2,26.1"></textarea>
-<div class="row">
-<button class="btn o" id="bUsar">Usar datos pegados</button>
-<label class="btn g" style="margin:0">Cargar archivo…<input id="file" type="file" accept=".csv,.txt,text/csv" hidden></label>
-<button class="btn g" id="bEj">Ver ejemplo (12 meses)</button>
-<button class="btn g" id="bBor">Borrar datos</button>
-</div>
-<div class="msg" id="msg">Los datos se guardan solo en este navegador.</div></div>
-<div class="card"><h2>Tabla de datos</h2><div class="tw" id="tabla"><p class="msg">Aún no hay datos.</p></div></div>
-</section>
-
-<section id="s-est">
-<div class="card"><h2>Estadística descriptiva</h2>
-<label for="col">Columna a analizar</label><select id="col"></select>
-<div class="grid" id="kp" style="margin-top:12px"></div></div>
-</section>
-
-<section id="s-graf"><div id="gw"></div></section>
-
-<section id="s-rec">
-<div class="card"><h2>Recomendaciones según tus datos</h2><div id="rc"></div></div>
-</section>
+<header class="hero" id="inicio"><div class="wrap heroGrid"><div>
+ <span class="eyebrow">Caso 05 · Estadística + IA</span>
+ <h1>Pedidos listos.<br><span style="color:var(--yellow)">A tiempo.</span></h1>
+ <p>Analiza el tiempo de alistamiento de pedidos (picking), identifica oportunidades y compara alternativas para mejorar la operación logística.</p>
+ <div class="heroActions"><a class="primary" style="display:inline-block;padding:12px 17px;border-radius:12px;font-weight:800" href="#datos">Explorar indicadores ↘</a><a class="secondary" style="display:inline-block;padding:11px 16px;border-radius:12px;font-weight:750" href="#proceso">Ver el proceso</a></div>
+ <div class="heroStats"><div class="heroStat"><strong>32</strong><span>registros esperados</span></div><div class="heroStat"><strong>22 min</strong><span>meta de la empresa</span></div><div class="heroStat"><strong>25 min</strong><span>límite máximo</span></div></div>
+ </div>
+ <svg class="heroArt" viewBox="0 0 400 300" role="img" aria-label="Ilustración de contenedores y cajas en un centro logístico"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#13a89e"/><stop offset="1" stop-color="#087e78"/></linearGradient></defs><circle cx="210" cy="145" r="128" fill="#ffffff0c"/><path d="M40 255H370" stroke="#b9d2e5" stroke-width="4" stroke-linecap="round"/><g transform="translate(46 74)"><rect x="0" y="92" width="100" height="85" rx="5" fill="#f4c542"/><path d="M18 100V170M38 100V170M58 100V170M78 100V170" stroke="#9d7711" stroke-width="3" opacity=".6"/><rect x="105" y="48" width="115" height="129" rx="5" fill="url(#g)"/><path d="M124 56V170M146 56V170M168 56V170M190 56V170" stroke="#b7f0e9" stroke-width="3" opacity=".55"/><rect x="225" y="105" width="72" height="72" rx="5" fill="#f1f5fa"/><path d="M240 113V168M258 113V168M276 113V168" stroke="#b7c8d8" stroke-width="3"/><path d="M-8 92L48 52L105 92" fill="none" stroke="#f4c542" stroke-width="6" stroke-linejoin="round"/><path d="M96 48L162 8L228 48" fill="none" stroke="#f1f5fa" stroke-width="6" stroke-linejoin="round"/><rect x="140" y="0" width="44" height="9" rx="3" fill="#f4c542"/><path d="M162 8V28" stroke="#f4c542" stroke-width="4"/><rect x="151" y="28" width="22" height="19" rx="3" fill="#f4c542"/></g><g transform="translate(245 20)"><rect width="112" height="48" rx="12" fill="#fff"/><circle cx="22" cy="24" r="7" fill="#13a89e"/><path d="M38 19H94M38 28H78" stroke="#c7d5e2" stroke-width="4" stroke-linecap="round"/></g></svg>
+</div></header>
+<main>
+<section class="section" id="datos"><div class="wrap">
+ <div class="sectionHead"><div><div class="kicker">Panel de control</div><h2>¿Cómo estamos alistando?</h2><p class="lead">Carga tus mediciones para calcular los indicadores. Los resultados se actualizarán automáticamente.</p></div><span class="pill">● Meta: 22 min · Límite: 25 min</span></div>
+ <div class="panel" style="margin-bottom:17px"><h3 style="margin:0 0 15px">1. Datos del proceso</h3><div class="fieldGrid">
+ <label class="field">Empresa<input id="empresa" value="Centro Logístico Puerto Seco S.A.S."></label>
+ <label class="field">Variable medida<input id="variable" value="Tiempo de alistamiento por pedido"></label>
+ <label class="field">Unidad<select id="unidad"><option value="min">Minutos (min)</option><option value="s">Segundos (s)</option><option value="h">Horas (h)</option></select></label>
+ <label class="field">Qué es mejor<select id="mejor"><option value="menor">Menor valor</option></select></label>
+ <label class="field">Límite máximo<input id="limite" type="number" min="0" step="any" value="25"></label>
+ <label class="field">Meta de la empresa<input id="meta" type="number" min="0" step="any" value="22"></label>
+ </div></div>
+ <div class="twoCol">
+ <div class="panel"><h3 style="margin:0 0 6px">2. Carga tus datos</h3><p class="small" style="margin-top:0">Selecciona el CSV de tus registros o pega los tiempos separados por comas, espacios o saltos de línea.</p>
+ <div class="uploadZone"><div class="uploadIcon">⇧</div><strong>Importar archivo de mediciones</strong><p>Formatos admitidos: .CSV y .TXT</p><div class="uploadControls"><input class="fileInput" id="archivo" type="file" accept=".csv,.txt,text/csv,text/plain"><button class="quiet" id="ejemplo" type="button">Probar ejemplo</button></div></div>
+ <textarea id="pegarDatos" class="pastebox" placeholder="Ejemplo: 21.4, 23.1, 24.2, 20.8...&#10;También puedes pegar una columna desde Excel."></textarea>
+ <div class="uploadControls" style="justify-content:flex-start;margin-top:9px"><button class="primary" id="procesar" type="button">Calcular indicadores</button><button class="quiet" id="limpiar" type="button">Limpiar</button></div><div class="status" id="estado" role="status">Aún no has cargado mediciones. Carga el CSV de tu caso para obtener resultados reales.</div>
+ </div>
+ <div class="panel"><h3 style="margin:0 0 6px">¿Qué vamos a comprobar?</h3><p class="small" style="margin-top:0">La ficha del caso plantea dos preguntas principales:</p>
+ <div style="display:flex;gap:12px;margin:18px 0"><span class="ico">◎</span><div><strong>¿El promedio cumple la meta?</strong><div class="small">Comparamos el promedio observado con 22 minutos.</div></div></div>
+ <div style="display:flex;gap:12px;margin:18px 0"><span class="ico" style="background:#fff3d0;color:#916d00">✓</span><div><strong>¿Todos los pedidos cumplen el límite?</strong><div class="small">Contamos cuántos pedidos superan los 25 minutos.</div></div></div>
+ <div style="display:flex;gap:12px;margin:18px 0"><span class="ico" style="background:#fce9e8;color:#b63c38">↗</span><div><strong>¿Hay mucha variación?</strong><div class="small">La desviación estándar ayuda a describir la dispersión de los tiempos.</div></div></div>
+ </div></div>
+ <div class="cards" style="margin-top:18px" id="kpis">
+ <div class="card"><div class="cardTop"><span>Promedio</span><span class="ico">◷</span></div><div class="metric" id="promedio">— <small>min</small></div><div class="submetric" id="promSub">Esperando datos</div></div>
+ <div class="card"><div class="cardTop"><span>Mediana</span><span class="ico">↔</span></div><div class="metric" id="mediana">— <small>min</small></div><div class="submetric">Valor central de la muestra</div></div>
+ <div class="card"><div class="cardTop"><span>Desviación estándar</span><span class="ico">⌁</span></div><div class="metric" id="desviacion">— <small>min</small></div><div class="submetric">Variación de los tiempos</div></div>
+ <div class="card"><div class="cardTop"><span>Sobre el límite</span><span class="ico" style="background:#fce9e8;color:#b63c38">!</span></div><div class="metric" id="fuera">— <small>pedidos</small></div><div class="submetric" id="fueraSub">Mayor que el límite máximo</div></div>
+ </div>
+ <div class="verdict" id="veredicto"><strong>Tu conclusión aparecerá aquí</strong><p>Cuando cargues los datos, verás si el promedio cumple la meta y si hay pedidos por encima del límite.</p></div>
+ <div class="twoCol">
+ <div class="panel"><h3 style="margin:0 0 4px">Distribución de tiempos</h3><p class="small" style="margin-top:0">Cada barra representa un intervalo de tiempo.</p><svg class="chart" id="histograma" viewBox="0 0 480 245" role="img" aria-label="Histograma de tiempos"></svg><div class="chartLegend"><span><i class="legendDot" style="background:#13a89e"></i>Dentro del límite</span><span><i class="legendDot" style="background:#d9534f"></i>Sobre el límite</span></div></div>
+ <div class="panel"><h3 style="margin:0 0 4px">Pedidos en orden de registro</h3><p class="small" style="margin-top:0">Cada punto es un pedido; la línea amarilla indica la meta.</p><svg class="chart" id="secuencia" viewBox="0 0 480 245" role="img" aria-label="Gráfico de secuencia de pedidos"></svg><div class="chartLegend"><span><i class="legendDot" style="background:#13a89e"></i>Tiempo registrado</span><span><i class="legendDot" style="background:#f4c542"></i>Meta</span><span><i class="legendDot" style="background:#d9534f"></i>Límite</span></div></div>
+ </div>
+</div></section>
+<section class="section" id="proceso" style="background:#eaf0f6"><div class="wrap">
+ <div class="sectionHead"><div><div class="kicker">Así funciona la operación</div><h2>El recorrido de un pedido</h2><p class="lead">El picking comprende las actividades desde que llega la orden hasta que el pedido queda listo para despacho.</p></div></div>
+ <div class="processGrid">
+ <article class="stepCard"><div class="stepNum">01</div><h3>Recibir orden</h3><p>Llega la solicitud del cliente.</p></article>
+ <article class="stepCard"><div class="stepNum">02</div><h3>Asignar</h3><p>Se define el operario y la ruta.</p></article>
+ <article class="stepCard"><div class="stepNum">03</div><h3>Desplazarse</h3><p>El operario llega a la ubicación.</p></article>
+ <article class="stepCard"><div class="stepNum">04</div><h3>Recolectar</h3><p>Se toman los productos solicitados.</p></article>
+ <article class="stepCard"><div class="stepNum">05</div><h3>Verificar</h3><p>Se comprueban códigos y cantidades.</p></article>
+ <article class="stepCard"><div class="stepNum">06</div><h3>Empacar</h3><p>El pedido queda listo para despacho.</p></article>
+ </div>
+ <p class="small" style="margin-top:14px">Nota: los pasos 3 y 4 son posibles puntos de análisis; se debe validar con los datos antes de concluir que son los que más tiempo consumen.</p>
+</div></section>
+<section class="section" id="mejoras"><div class="wrap">
+ <div class="sectionHead"><div><div class="kicker">Acciones posibles</div><h2>Alternativas de mejora</h2><p class="lead">Estas propuestas son hipótesis de trabajo. Evalúalas con los resultados reales de tu muestra.</p></div></div>
+ <div class="alts">
+ <article class="alt"><div class="altHead"><div class="altBadge">A</div><div><h3>Reubicar productos por rotación</h3><p>Acercar las referencias de mayor demanda al punto de empaque para reducir recorridos innecesarios.</p></div></div><ul><li>Analizar cuáles productos aparecen con mayor frecuencia.</li><li>Organizar ubicaciones por frecuencia de pedido.</li><li>Medir de nuevo los tiempos después del cambio.</li></ul><span class="pill">Objetivo: reducir el tiempo promedio</span></article>
+ <article class="alt"><div class="altHead"><div class="altBadge">B</div><div><h3>Picking por lotes y ruta fija</h3><p>Agrupar pedidos de una misma zona y definir recorridos estándar para evitar desplazamientos repetidos.</p></div></div><ul><li>Probar una ruta estándar por zona.</li><li>Comparar tiempos antes y después.</li><li>Revisar si disminuye la variabilidad.</li></ul><span class="pill">Objetivo: mayor consistencia</span></article>
+ </div>
+</div></section>
+<section class="section" id="simulador" style="background:#eaf0f6"><div class="wrap">
+ <div class="sectionHead"><div><div class="kicker">Prueba escenarios</div><h2>Simulador de mejora</h2><p class="lead">Mueve los controles para estimar cómo cambiarían los indicadores si se redujera el tiempo promedio o la variabilidad.</p></div></div>
+ <div class="panel simGrid"><div>
+ <div class="rangeRow"><label for="reduccion">Reducción hipotética del promedio <strong id="reduccionTxt">10%</strong></label><input id="reduccion" type="range" min="0" max="30" step="1" value="10"></div>
+ <div class="rangeRow"><label for="variabilidad">Reducción hipotética de la variabilidad <strong id="variabilidadTxt">15%</strong></label><input id="variabilidad" type="range" min="0" max="50" step="1" value="15"></div>
+ <div class="presetRow"><button class="quiet" data-r="10" data-v="0">Escenario A</button><button class="quiet" data-r="0" data-v="25">Escenario B</button><button class="secondary" data-r="10" data-v="25">Combinar A + B</button></div>
+ <p class="small">Los porcentajes son supuestos editables para explorar escenarios, no resultados garantizados.</p>
+ </div><div class="simResult"><div class="eyebrow">Estimación ilustrativa</div><div class="metric" id="simProm">— <small>min</small></div><div id="simStatus">Carga datos para estimar el escenario.</div><p id="simDetalle">Los resultados simulados se calculan a partir de tus indicadores reales cuando estén disponibles.</p></div></div>
+</div></section>
 </main>
-
+<footer class="footer"><div class="wrap footerInner"><div><strong>Centro Logístico Puerto Seco S.A.S.</strong><br>Estadística (840601) · Ingeniería de Producción · UNIPAZ</div><div>Caso 05 · Alistamiento de pedidos (picking)<br><span style="color:#9fb2c6">Diseño académico para análisis de proceso</span></div></div></footer>
 <script>
 const $=id=>document.getElementById(id);
-const fmt=x=>Number(x).toLocaleString('es-CO',{maximumFractionDigits:2});
-const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-const S={csv:'',cfg:{empresa:'Centro Logístico Puerto Seco S.A.S.',variable:'Tiempo de alistamiento por pedido',unidad:'min',mejor:'menor',lim:'25',meta:'22'}};
-let D={h:[],r:[],num:[],sep:',',lab:-1};
-const EJ="mes,ventas,costos,gastos_operativos,clientes_nuevos,clientes_perdidos,producto_estrella\n2025-01,310,205,70,8,5,Picking estándar\n2025-02,285,190,68,6,4,Picking estándar\n2025-03,330,216,71,9,5,Picking estándar\n2025-04,345,225,72,10,6,Empaque y etiquetado\n2025-05,390,252,75,14,6,Picking express\n2025-06,405,262,77,12,7,Picking express\n2025-07,360,238,78,8,8,Picking estándar\n2025-08,340,232,80,7,9,Picking estándar\n2025-09,355,247,84,9,11,Almacenamiento\n2025-10,400,288,90,13,13,Picking express\n2025-11,480,360,105,18,14,Picking express\n2025-12,520,405,120,20,17,Picking express";
-
-function save(){try{localStorage.setItem('ps_app',JSON.stringify(S))}catch(e){}}
-function load(){try{const x=JSON.parse(localStorage.getItem('ps_app'));if(x){S.csv=x.csv||'';Object.assign(S.cfg,x.cfg)}}catch(e){}}
-const toN=(v,sep)=>Number(sep===';'?String(v).replace(',','.'):v);
-
-function parse(t){
-  t=t.replace(/^\uFEFF/,'');
-  const L=t.split(/\r?\n/).filter(l=>l.trim());
-  if(!L.length)return{h:[],r:[],num:[],sep:',',lab:-1};
-  const c=(s,ch)=>s.split(ch).length;
-  const sep=c(L[0],';')>c(L[0],',')?';':c(L[0],'\t')>c(L[0],',')?'\t':',';
-  const r=L.map(l=>l.split(sep).map(x=>x.trim().replace(/^"|"$/g,'')));
-  const N=v=>v!==''&&v!==undefined&&!isNaN(toN(v,sep));
-  let h;
-  if(r[0].every(N))h=r[0].map((_,i)=>r[0].length>1?'col'+(i+1):'valor');else h=r.shift();
-  const num=h.map((_,j)=>j).filter(j=>r.length&&r.filter(x=>N(x[j])).length>=0.7*r.length);
-  const lab=h.map((_,j)=>j).find(j=>!num.includes(j));
-  return{h,r,num,sep,lab:lab===undefined?-1:lab};
-}
-function series(j){
-  const o=[];
-  D.r.forEach((x,i)=>{if(x[j]!==''&&x[j]!==undefined&&!isNaN(toN(x[j],D.sep)))o.push({v:toN(x[j],D.sep),l:D.lab>=0?x[D.lab]:String(i+1)})});
-  return o;
-}
-const col=()=>+$('col').value;
-function st(a){
-  const n=a.length,m=a.reduce((p,c)=>p+c,0)/n,s=[...a].sort((p,c)=>p-c);
-  const md=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;
-  const sd=n>1?Math.sqrt(a.reduce((p,c)=>p+(c-m)**2,0)/(n-1)):0;
-  return{n,m,md,sd,mn:s[0],mx:s[n-1],cv:m?sd/m*100:0};
-}
-function slope(a){
-  const n=a.length,mx=(n-1)/2,my=a.reduce((p,c)=>p+c,0)/n;
-  let nu=0,de=0;a.forEach((y,i)=>{nu+=(i-mx)*(y-my);de+=(i-mx)**2});
-  return de?nu/de:0;
-}
-function ctx(){
-  const c=S.cfg,lim=parseFloat(c.lim),meta=parseFloat(c.meta),menor=c.mejor==='menor';
-  return{c,lim,meta,menor,u:c.unidad?' '+c.unidad:'',fuera:v=>!isNaN(lim)&&(menor?v>lim:v<lim)};
-}
-
-function head(){
-  $('ttl').textContent=S.cfg.empresa||'Análisis estadístico';
-  $('sub').textContent='Variable: '+(S.cfg.variable||'—')+(S.cfg.unidad?' ('+S.cfg.unidad+')':'');
-}
-function readCfg(){
-  ['empresa','variable','unidad','mejor','lim','meta'].forEach(k=>S.cfg[k]=$(k).value);
-  save();head();
-}
-function bad(t){return /^(%PDF|PK\u0003\u0004)/.test(t)||/\u0000/.test(t)||(t.match(/\uFFFD/g)||[]).length>5}
-function apply(t,msg){
-  if(t&&bad(t)){$('msg').textContent='Ese contenido no es un CSV (parece un PDF u otro formato). Carga el archivo .csv de tu ficha.';return}
-  S.csv=t;D=parse(t);save();$('txt').value=t;
-  $('col').innerHTML=D.num.map(j=>`<option value="${j}">${esc(D.h[j])}</option>`).join('');
-  if(!D.h.length){$('tabla').innerHTML='<p class="msg">Aún no hay datos.</p>';$('msg').textContent='Los datos se guardan solo en este navegador.';return}
-  $('tabla').innerHTML='<table><tr>'+D.h.map(x=>`<th>${esc(x)}</th>`).join('')+'</tr>'+
-    D.r.map(r=>'<tr>'+D.h.map((_,j)=>`<td>${esc(r[j]??'')}</td>`).join('')+'</tr>').join('')+'</table>';
-  $('msg').textContent=(msg||'Datos guardados en este navegador.')+` ${D.r.length} filas, ${D.h.length} columnas, ${D.num.length} numéricas.`;
-}
-
-function renderEst(){
-  const b=$('kp');
-  if(!D.num.length){b.innerHTML='<p class="msg">Primero carga datos en la sección Datos.</p>';return}
-  const a=series(col()).map(o=>o.v);if(!a.length)return;
-  const s=st(a),{lim,meta,menor,u,fuera}=ctx(),K=[];
-  K.push(['Registros',s.n],['Promedio',fmt(s.m)+u],['Mediana',fmt(s.md)+u],['Desviación estándar',fmt(s.sd)+u],
-    ['Mínimo',fmt(s.mn)+u],['Máximo',fmt(s.mx)+u],['Variación (CV)',fmt(s.cv)+' %']);
-  if(!isNaN(meta)){const ok=menor?s.m<=meta:s.m>=meta;K.push(['Promedio vs meta ('+fmt(meta)+')',ok?'Cumple':'No cumple',ok?'ok':'bad'])}
-  if(!isNaN(lim)){
-    const o=a.filter(fuera).length,p=o/s.n*100;
-    K.push(['Fuera del límite ('+fmt(lim)+')',o+' de '+s.n+' ('+fmt(p)+' %)',o?'bad':'ok']);
-    if(s.sd>0){const cpk=(menor?lim-s.m:s.m-lim)/(3*s.sd);K.push(['Cpk (un solo límite)',fmt(cpk),cpk>=1.33?'ok':cpk<1?'bad':''])}
+let datos=[];
+const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+function setStatus(msg,type=''){const e=$('estado');e.textContent=msg;e.className='status '+type}
+function parseValues(text){
+ const lines=text.trim().split(/\r?\n/).filter(x=>x.trim());
+ if(!lines.length)return [];
+ let values=[];
+ for(const line of lines){
+  const cells=line.trim().split(/[;,\t ]+/).filter(Boolean);
+  for(let c of cells){
+   c=c.replace(/^["']|["']$/g,'');
+   if(!c)continue;
+   if(/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(c))values.push(Number(c));
+   else if(/^[+-]?\d+,\d+$/.test(c) && !text.includes(';')) values.push(Number(c.replace(',','.')));
   }
-  b.innerHTML=K.map(k=>`<div class="kpi ${k[2]||''}"><b>${k[1]}</b><span>${k[0]}</span></div>`).join('');
+ }
+ return values.filter(Number.isFinite);
 }
-
-const nrm=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-const sm=(a,f)=>a.reduce((p,o)=>p+f(o),0);
-const pc=(x,y)=>y?(x/y-1)*100:0;
-const kpi=(l,v,c)=>`<div class="kpi ${c||''}"><b>${v}</b><span>${l}</span></div>`;
-function findFin(){
-  const f=re=>D.num.find(j=>re.test(nrm(D.h[j])));
-  const v=f(/venta|ingreso/),c=f(/^costo/),g=f(/gasto/),n=f(/nuevo/),p=f(/perdid/);
-  if(v===undefined||c===undefined)return null;
-  const pe=D.h.findIndex(h=>/producto/.test(nrm(h)));
-  const num=(x,j)=>j===undefined?NaN:toN(x[j],D.sep);
-  const R=D.r.map((x,i)=>({l:esc(D.lab>=0?x[D.lab]:i+1),v:num(x,v),c:num(x,c),g:g===undefined?0:num(x,g),n:num(x,n),p:num(x,p),e:pe>=0?esc(x[pe]||''):''}))
-    .filter(o=>isFinite(o.v)&&isFinite(o.c)&&isFinite(o.g));
-  R.forEach(o=>o.u=o.v-o.c-o.g);
-  return R.length>=4?R:null;
+function mean(a){return a.reduce((s,x)=>s+x,0)/a.length}
+function stats(a){const sorted=[...a].sort((x,y)=>x-y),m=mean(a),med=sorted.length%2?sorted[(sorted.length-1)/2]:(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2;const sd=Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1||1));return {n:a.length,m,med,sd,min:sorted[0],max:sorted.at(-1),over:a.filter(x=>x>Number($('limite').value)).length,underMeta:a.filter(x=>x<=Number($('meta').value)).length,sorted}}
+function svgText(x,y,t,size=11,fill='#66788a',anchor='middle'){return `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" text-anchor="${anchor}" font-family="system-ui,sans-serif">${t}</text>`}
+function renderHistogram(a){
+ const svg=$('histograma');if(!a.length){svg.innerHTML=svgText(240,120,'Carga datos para ver el histograma',13);return}
+ const lim=Number($('limite').value),lo=Math.min(...a),hi=Math.max(...a),range=hi-lo||1,bins=Math.min(8,Math.max(4,Math.ceil(Math.sqrt(a.length)))),step=range/bins||1,counts=Array(bins).fill(0),bad=Array(bins).fill(0);
+ a.forEach(x=>{let i=Math.min(bins-1,Math.floor((x-lo)/step));counts[i]++;if(x>lim)bad[i]++});
+ const max=Math.max(...counts,1),left=42,top=20,w=414,h=174,bw=w/bins;
+ let s=`<line x1="${left}" y1="${top+h}" x2="${left+w}" y2="${top+h}" stroke="#cdd8e2"/>`;
+ counts.forEach((c,i)=>{let bh=c/max*(h-8),x=left+i*bw+5,y=top+h-bh;let good=c-bad[i],goodH=bh*(good/(c||1)),badH=bh-goodH;s+=`<rect x="${x}" y="${y}" width="${Math.max(3,bw-10)}" height="${goodH}" rx="3" fill="#13a89e"/>`;if(bad[i])s+=`<rect x="${x}" y="${y}" width="${Math.max(3,bw-10)}" height="${badH}" rx="3" fill="#d9534f"/>`;s+=svgText(x+(bw-10)/2,top+h+17,fmt(lo+i*step,1),9)});for(let i=0;i<=max;i++){if(i%Math.max(1,Math.ceil(max/4))===0){let y=top+h-i/max*(h-8);s+=svgText(left-10,y+4,String(i),10,'#66788a','end')}}s+=svgText(240,238,'Tiempo registrado ('+$('unidad').value+')',10);svg.innerHTML=s;
 }
-function diagFin(R){
-  const n=R.length,k=Math.min(3,Math.floor(n/2)),A=R.slice(0,k),B=R.slice(-k);
-  const V=sm(R,o=>o.v),C=sm(R,o=>o.c),U=sm(R,o=>o.u),cli=R.every(o=>isFinite(o.n)&&isFinite(o.p));
-  const cr=a=>sm(a,o=>o.c)/sm(a,o=>o.v)*100,mg=a=>sm(a,o=>o.u)/sm(a,o=>o.v)*100;
-  const best=[...R].sort((x,y)=>y.v-x.v)[0],worst=[...R].sort((x,y)=>x.v-y.v)[0],bu=[...R].sort((x,y)=>y.u-x.u)[0];
-  const neg=R.filter(o=>o.u<0),pos=R.filter(o=>o.u>0),gv=pc(sm(B,o=>o.v),sm(A,o=>o.v));
-  const S1=[],W1=[];
-  if(gv>0)S1.push(`Las ventas de los últimos ${k} meses son ${fmt(gv)} % mayores que las de los primeros ${k}.`);
-  if(U>0)S1.push(`La utilidad total del período es ${fmt(U)}, un margen de ${fmt(U/V*100)} % sobre las ventas.`);
-  S1.push(`Mejor mes en ventas: ${best.l} con ${fmt(best.v)}.`);
-  if(cli){const N=sm(R,o=>o.n);S1.push(`Captaste ${fmt(N)} clientes nuevos en ${n} meses, unos ${fmt(N/n)} por mes.`)}
-  S1.push(`Mejor utilidad: ${bu.l} con ${fmt(bu.u)} (${fmt(bu.u/bu.v*100)} % de sus ventas).`,`${pos.length} de ${n} meses cerraron con utilidad positiva.`);
-  if(cr(B)>cr(A)+2)W1.push(`Los costos pasaron de ${fmt(cr(A))} % de las ventas (primeros ${k} meses) a ${fmt(cr(B))} % (últimos ${k}).`);
-  if(cli){const p1=sm(A,o=>o.p),p2=sm(B,o=>o.p);
-    if(p2>p1)W1.push(`Los clientes perdidos subieron de ${fmt(p1)} (primeros ${k} meses) a ${fmt(p2)} (últimos ${k}), ${fmt(pc(p2,p1))} % más.`);
-    const nv=R.filter(o=>o.n<o.p);
-    if(nv.length)W1.push(`En ${nv.length} mes(es) perdiste más clientes de los que ganaste: ${nv.map(o=>o.l).join(', ')}.`)}
-  if(mg(B)<mg(A)-1)W1.push(`El margen de utilidad cayó de ${fmt(mg(A))} % a ${fmt(mg(B))} %${gv>0?' aunque las ventas subieron '+fmt(gv)+' %':''}.`);
-  if(neg.length)W1.push(`Hay ${neg.length} mes(es) con pérdida: ${neg.map(o=>o.l+' ('+fmt(o.u)+')').join(', ')}.`);
-  const g1=sm(A,o=>o.g),g2=sm(B,o=>o.g);
-  if(g1>0&&pc(g2,g1)>gv)W1.push(`Los gastos operativos crecieron ${fmt(pc(g2,g1))} %, más que las ventas (${fmt(gv)} %).`);
-  W1.push(`Mes más débil en ventas: ${worst.l} con ${fmt(worst.v)}, ${fmt((1-worst.v/best.v)*100)} % menos que el mejor mes.`,`Las ventas varían ${fmt(best.v-worst.v)} entre el mejor y el peor mes.`,`La utilidad más baja fue en ${[...R].sort((x,y)=>x.u-y.u)[0].l}.`);
-  return[S1,W1];
+function renderSequence(a,st){
+ const svg=$('secuencia');if(!a.length){svg.innerHTML=svgText(240,120,'Carga datos para ver la secuencia',13);return}
+ const lim=Number($('limite').value),meta=Number($('meta').value),min=Math.min(...a,meta,lim)-1,max=Math.max(...a,meta,lim)+1,span=max-min||1,left=37,top=20,w=425,h=174;
+ const x=i=>left+(a.length===1?.5:i/(a.length-1))*w,y=v=>top+h-(v-min)/span*h;
+ let s=`<line x1="${left}" y1="${top+h}" x2="${left+w}" y2="${top+h}" stroke="#cdd8e2"/>`;
+ [meta,lim].forEach((v,i)=>{s+=`<line x1="${left}" y1="${y(v)}" x2="${left+w}" y2="${y(v)}" stroke="${i?'#d9534f':'#f4c542'}" stroke-width="2" stroke-dasharray="6 5"/>`;s+=svgText(left+w-3,y(v)-5,i?'Límite':'Meta',10,i?'#d9534f':'#987500','end')});
+ let points=a.map((v,i)=>`${x(i)},${y(v)}`).join(' ');s+=`<polyline points="${points}" fill="none" stroke="#13a89e" stroke-width="2" opacity=".65"/>`;
+ a.forEach((v,i)=>s+=`<circle cx="${x(i)}" cy="${y(v)}" r="3.5" fill="${v>lim?'#d9534f':'#13a89e'}"><title>Pedido ${i+1}: ${fmt(v)} ${$('unidad').value}</title></circle>`);
+ s+=svgText(left,top+h+18,'1',10,'#66788a','middle')+svgText(left+w,top+h+18,String(a.length),10,'#66788a','middle')+svgText(240,238,'Número de pedido (orden de registro)',10);svg.innerHTML=s;
 }
-function altsFin(R){
-  const n=R.length,k=Math.min(3,Math.floor(n/2)),A=R.slice(0,k),B=R.slice(-k);
-  const V=sm(R,o=>o.v),C=sm(R,o=>o.c),G=sm(R,o=>o.g),mv=V/n,cm=(V-C)/V,cli=R.every(o=>isFinite(o.n)&&isFinite(o.p));
-  const low=[...R].sort((x,y)=>x.v-y.v).slice(0,3),cnt={};
-  R.forEach(o=>{if(o.e)cnt[o.e]=(cnt[o.e]||0)+1});
-  const star=Object.keys(cnt).sort((x,y)=>cnt[y]-cnt[x])[0],L=[];
-  L.push({t:'Bajar los costos directos 3 %',que:`Renegociar con proveedores y reducir horas extra. Hoy los costos son ${fmt(C/V*100)} % de las ventas (${fmt(sm(B,o=>o.c)/sm(B,o=>o.v)*100)} % en los últimos ${k} meses).`,costo:.02*mv,imp:.03*C});
-  if(cli&&sm(R,o=>o.n)>0){const P=sm(R,o=>o.p),N=sm(R,o=>o.n),sv=.25*P;
-    L.push({t:'Retener clientes: perder 25 % menos',que:`Hacer seguimiento posventa y llamar a los clientes que reducen su compra. Perdiste ${fmt(P)} clientes en ${n} meses (${fmt(P/N*100)} % de los ${fmt(N)} que captaste); retener 25 % es salvar unos ${fmt(sv)}.`,costo:.03*mv,imp:sv*(V/N)*cm,nota:' (estimado: ventas del período ÷ clientes nuevos, por tu margen de contribución)'})}
-  else{const w=[...R].sort((x,y)=>y.c/y.v-x.c/x.v)[0],av=C/V;
-    L.push({t:'Corregir el mes con costos más altos',que:`${w.l} tuvo costos de ${fmt(w.c/w.v*100)} % de sus ventas frente a ${fmt(av*100)} % del promedio. Revisar horas extra y compras de ese mes.`,costo:.01*mv,imp:Math.max(0,w.c-av*w.v)})}
-  L.push({t:'Subir precios 2 %',que:`Ajustar tarifas${star?', empezando por '+star:''}. Con ventas de ${fmt(V)}, cada 1 % de aumento suma ${fmt(V*.01)} si no pierdes clientes.`,costo:.005*mv,imp:.02*V});
-  const g1=sm(A,o=>o.g)/k,g2=sm(B,o=>o.g)/k,d=g2>g1?(g2-g1)*n:.05*G;
-  L.push({t:'Controlar los gastos operativos',que:`Congelar los gastos en el nivel de los primeros ${k} meses (${fmt(g1)} por mes). Hoy están en ${fmt(g2)} por mes.`,costo:.01*mv,imp:d});
-  L.push({t:'Promoción en los meses flojos',que:`Lanzar una campaña${star?' de '+star:''} en ${low.map(o=>o.l).join(', ')}, los meses más débiles, para subir sus ventas 10 %.`,costo:.02*mv,imp:.1*sm(low,o=>o.v)*cm});
-  return L.map(x=>({t:x.t,que:x.que,costo:'≈ '+fmt(x.costo)+' (estimado)',imp:'+'+fmt(x.imp)+' de utilidad en el período'+(x.nota||''),score:x.imp/Math.max(x.costo,1e-9)}));
+function updateSim(st){
+ const r=Number($('reduccion').value),v=Number($('variabilidad').value);$('reduccionTxt').textContent=r+'%';$('variabilidadTxt').textContent=v+'%';
+ if(!st){$('simProm').innerHTML='— <small>min</small>';$('simStatus').textContent='Carga datos para estimar el escenario.';$('simDetalle').textContent='El simulador usará el promedio y la desviación estándar de tus mediciones.';return}
+ const m=st.m*(1-r/100),sd=st.sd*(1-v/100),lim=Number($('limite').value),meta=Number($('meta').value);$('simProm').innerHTML=fmt(m)+' <small>'+ $('unidad').value+'</small>';$('simStatus').textContent=m<=meta?'El promedio simulado alcanzaría la meta.':'El promedio simulado seguiría por encima de la meta.';$('simDetalle').textContent='Desviación estimada: '+fmt(sd)+' '+$('unidad').value+'. Este cálculo es ilustrativo y no predice exactamente cuántos pedidos cumplirán.';
 }
-function simProc(a,rp,rv){
-  const s=st(a),{menor,lim,fuera}=ctx(),dir=menor?1:-1;
-  const b=a.map(v=>s.m*(1-rp*dir)+(v-s.m)*(1-rv)),t=st(b);
-  return{m:t.m,sd:t.sd,out:isNaN(lim)?NaN:b.filter(fuera).length/b.length*100,cpk:t.sd>0&&!isNaN(lim)?(menor?lim-t.m:t.m-lim)/(3*t.sd):NaN};
+function render(){
+ const a=datos,unit=$('unidad').value,lim=Number($('limite').value),meta=Number($('meta').value);
+ if(!a.length){['promedio','mediana','desviacion','fuera'].forEach(id=>$(id).innerHTML='— <small>'+(id==='fuera'?'pedidos':unit)+'</small>');$('promSub').textContent='Esperando datos';$('fueraSub').textContent='Mayor que el límite máximo';$('veredicto').innerHTML='<strong>Tu conclusión aparecerá aquí</strong><p>Cuando cargues los datos, verás si el promedio cumple la meta y si hay pedidos por encima del límite.</p>';renderHistogram([]);renderSequence([],null);updateSim(null);return}
+ const st=stats(a);$('promedio').innerHTML=fmt(st.m)+' <small>'+unit+'</small>';$('mediana').innerHTML=fmt(st.med)+' <small>'+unit+'</small>';$('desviacion').innerHTML=fmt(st.sd)+' <small>'+unit+'</small>';$('fuera').innerHTML=st.over+' <small>de '+st.n+'</small>';$('promSub').textContent=st.m<=meta?'Cumple la meta de '+fmt(meta)+' '+unit:'Supera la meta de '+fmt(meta)+' '+unit;$('fueraSub').textContent=fmt(st.over/st.n*100,1)+'% de los pedidos supera el límite';
+ const avgOK=st.m<=meta, allOK=st.over===0;let title=avgOK?'El promedio cumple la meta.':'El promedio no cumple la meta.';let body='Promedio: '+fmt(st.m)+' '+unit+'. Meta: '+fmt(meta)+' '+unit+'. '+(allOK?'Todos los registros están dentro del límite de '+fmt(lim)+' '+unit+'.':st.over+' de '+st.n+' pedidos ('+fmt(st.over/st.n*100,1)+'%) superan el límite de '+fmt(lim)+' '+unit+'.');$('veredicto').innerHTML='<strong>'+title+'</strong><p>'+body+' Cumplir en promedio no significa necesariamente que todos los pedidos cumplan.</p>';
+ renderHistogram(a);renderSequence(a,st);updateSim(st);
 }
-function diagProc(d){
-  const a=d.map(o=>o.v),s=st(a),{lim,meta,menor,u,fuera}=ctx(),out=d.filter(o=>fuera(o.v));
-  const sr=[...d].sort((x,y)=>menor?x.v-y.v:y.v-x.v),best=sr[0],worst=sr[sr.length-1];
-  const cpk=s.sd>0&&!isNaN(lim)?(menor?lim-s.m:s.m-lim)/(3*s.sd):NaN,tr=slope(a)*(s.n-1)/s.m*100,mal=menor?tr>0:tr<0;
-  const ok=!isNaN(meta)&&(menor?s.m<=meta:s.m>=meta),S1=[],W1=[];
-  if(ok)S1.push(`El promedio (${fmt(s.m)}${u}) cumple la meta de ${fmt(meta)}${u}, con ${fmt(Math.abs(s.m-meta))}${u} de margen.`);
-  if(!isNaN(lim)&&out.length<=s.n/2)S1.push(`${s.n-out.length} de ${s.n} registros (${fmt((s.n-out.length)/s.n*100)} %) están dentro del límite de ${fmt(lim)}${u}.`);
-  if(cpk>=1)S1.push(`El Cpk es ${fmt(cpk)}: el proceso es capaz de cumplir el límite.`);
-  if(s.cv<=15)S1.push(`Los valores son parejos: la variación (CV) es de solo ${fmt(s.cv)} %.`);
-  if(Math.abs(tr)>5&&!mal)S1.push(`La tendencia mejora: el valor ${tr>0?'sube':'baja'} ${fmt(Math.abs(tr))} % a lo largo de la muestra.`);
-  S1.push(`Mejor registro: ${esc(best.l)} con ${fmt(best.v)}${u}.`,`La mediana es ${fmt(s.md)}${u}, el valor típico del proceso.`,`Hay ${s.n} registros para analizar.`);
-  if(!isNaN(meta)&&!ok)W1.push(`El promedio (${fmt(s.m)}${u}) no cumple la meta de ${fmt(meta)}${u}: está ${fmt(Math.abs(s.m-meta))}${u} ${menor?'por encima':'por debajo'}.`);
-  if(out.length)W1.push(`${out.length} de ${s.n} registros (${fmt(out.length/s.n*100)} %) están fuera del límite de ${fmt(lim)}${u}; el peor es ${esc(worst.l)} con ${fmt(worst.v)}${u}.`);
-  if(cpk<1)W1.push(`El Cpk es ${fmt(cpk)} (menor que 1): el proceso no cumple el límite de forma estable.`);
-  if(s.cv>15)W1.push(`Los valores son poco parejos: el CV es ${fmt(s.cv)} % (desviación de ${fmt(s.sd)}${u}).`);
-  if(Math.abs(tr)>5&&mal)W1.push(`La tendencia empeora: el valor ${tr>0?'sube':'baja'} ${fmt(Math.abs(tr))} % a lo largo de la muestra.`);
-  W1.push(`Peor registro: ${esc(worst.l)} con ${fmt(worst.v)}${u}.`,`El rango entre el mejor y el peor registro es ${fmt(s.mx-s.mn)}${u}.`,`La desviación estándar es ${fmt(s.sd)}${u}.`);
-  return[S1,W1];
-}
-function altsProc(d){
-  const a=d.map(o=>o.v),{fuera,menor,u}=ctx(),b=simProc(a,0,0),out=d.filter(o=>fuera(o.v)).sort((x,y)=>menor?y.v-x.v:x.v-y.v);
-  const defs=[
-    ['Estandarizar el método de alistamiento','Definir una ruta y un orden fijos de recolección y capacitar a todo el personal en el mismo procedimiento.','Bajo (horas de capacitación y supervisión)',1,.03,.30],
-    ['Reubicar los productos por rotación','Poner los productos de mayor salida cerca de la zona de despacho y rotular los pasillos.','Medio (horas de reubicación y señalización)',2,.08,.05],
-    ['Alistar por zonas o por lotes','Dividir la bodega en zonas o agrupar pedidos parecidos para recorrer menos distancia.','Medio (rediseño de rutas y capacitación)',2,.10,.10],
-    ['Atacar las causas de los pedidos más lentos',out.length?`Revisar ${Math.min(out.length,5)} de los ${out.length} registros fuera del límite (${out.slice(0,5).map(o=>esc(o.l)+': '+fmt(o.v)).join(', ')}) y corregir qué los demoró.`:'Revisar los registros más lentos y corregir qué los demoró.','Bajo (tiempo del supervisor)',1,.02,.20],
-    ['Usar lector de código de barras o lista digital','Reducir búsquedas y errores con lectura de códigos de barras durante el alistamiento.','Alto (equipos y software)',3,.15,.15]];
-  return defs.map(([t,q,c,w,rp,rv])=>{
-    const s=simProc(a,rp,rv),g=(isNaN(b.out)?0:b.out-s.out)+(b.m-s.m)*(menor?1:-1)/b.m*100;
-    return{t,que:q,costo:c,imp:`El promedio pasaría de ${fmt(b.m)} a ${fmt(s.m)}${u}${isNaN(b.out)?'':' y los registros fuera del límite de '+fmt(b.out)+' % a '+fmt(s.out)+' %'}. Supuesto: ${rp*100} % de cambio en el promedio y ${rv*100} % menos variabilidad.`,score:g/w};
-  });
-}
-function altsHTML(L){
-  L.sort((x,y)=>y.score-x.score);
-  return L.slice(0,5).map((x,i)=>{const p=i<2?'Alta':i<4?'Media':'Baja';
-    return`<div class="rec"><b>${i+1}. ${x.t}</b> <span class="pill ${p}">Prioridad ${p}</span><br><b>Qué hacer:</b> ${x.que}<br><b>Costo estimado:</b> ${x.costo}<br><b>Impacto esperado:</b> ${x.imp}</div>`}).join('');
-}
-function simBuild(defs,calc,nota){
-  $('sim').innerHTML=defs.map((d,i)=>`<label for="r${i}">${d[0]}: <b id="o${i}">0</b> %</label><input type="range" id="r${i}" min="0" max="${d[1]}" value="0" style="margin-bottom:10px">`).join('')+'<div class="grid" id="so"></div><p class="msg">'+nota+'</p>';
-  const upd=()=>{const v=defs.map((_,i)=>+$('r'+i).value);v.forEach((x,i)=>$('o'+i).textContent=x);$('so').innerHTML=calc(v)};
-  defs.forEach((_,i)=>$('r'+i).addEventListener('input',upd));upd();
-}
-function simFin(R){
-  const V=sm(R,o=>o.v),C=sm(R,o=>o.c),G=sm(R,o=>o.g),U0=V-C-G;
-  simBuild([['Subir precios',20],['Bajar costos',20],['Aumentar clientes',30]],v=>{
-    const[p,c,k]=v.map(x=>x/100),V1=V*(1+p)*(1+k),U1=V1-C*(1-c)*(1+k)-G,d=U1-U0;
-    return kpi('Utilidad actual',fmt(U0))+kpi('Utilidad simulada',fmt(U1),U1>=U0?'ok':'bad')+kpi('Cambio',(d>=0?'+':'')+fmt(d),d>0?'ok':d<0?'bad':'')+kpi('Margen simulado',fmt(U1/V1*100)+' %');
-  },'Supuestos: más clientes sube ventas y costos en el mismo %; los gastos operativos no cambian; subir precios no hace perder clientes. Cifras de todo el período de la tabla.');
-}
-function simPro(a){
-  const b=simProc(a,0,0),{u}=ctx();
-  simBuild([['Reducir el promedio',30],['Reducir la variabilidad',50]],v=>{
-    const s=simProc(a,v[0]/100,v[1]/100),ar=(x,y,f)=>fmt(x)+f+' → '+fmt(y)+f;
-    return kpi('Promedio',ar(b.m,s.m,u))+kpi('Desviación estándar',ar(b.sd,s.sd,u))+(isNaN(b.out)?'':kpi('Registros fuera del límite',ar(b.out,s.out,' %'),s.out<b.out?'ok':''))+(isNaN(b.cpk)?'':kpi('Cpk',ar(b.cpk,s.cpk,''),s.cpk>=1?'ok':''));
-  },'Simulación: mueve todos los registros para cambiar el promedio y acercarlos o alejarlos del promedio. Es una estimación, no una predicción.');
-}
-function renderRec(){
-  const b=$('rc');
-  if(!D.num.length){b.innerHTML='<p class="msg">Primero carga datos en la sección Datos.</p>';return}
-  const nom=esc(S.cfg.empresa||'tu empresa'),R=findFin();let dg,al,note,d;
-  if(R){dg=diagFin(R);al=altsFin(R);note='Análisis financiero de '+R.length+' períodos. Los costos de implementación son estimaciones (porcentajes de tu venta promedio) en las mismas unidades de tu tabla.'}
-  else{d=series(col());if(!d.length)return;dg=diagProc(d);al=altsProc(d);note='Análisis de «'+esc(D.h[col()])+'» con '+d.length+' registros. Los porcentajes de mejora son supuestos para comparar alternativas.'}
-  const li=a=>a.slice(0,3).map(x=>`<li>${x}</li>`).join('');
-  b.innerHTML=`<p class="msg">Diagnóstico automático para <b>${nom}</b>. ${note}</p><div class="g2"><div><h2>3 fortalezas</h2><ul>${li(dg[0])}</ul></div><div><h2>3 debilidades</h2><ul>${li(dg[1])}</ul></div></div><h2 style="margin-top:14px">5 alternativas de mejora para ${nom}</h2>${altsHTML(al)}<h2 style="margin-top:14px">Simulación</h2><div id="sim"></div>`;
-  R?simFin(R):simPro(d.map(o=>o.v));
-}
-
-let CH=[];
-function dl(id,nm){
-  const c=$(id),t=document.createElement('canvas');t.width=c.width;t.height=c.height;
-  const g=t.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,t.width,t.height);g.drawImage(c,0,0);
-  const a=document.createElement('a');a.href=t.toDataURL('image/png');a.download=nm+'.png';a.click();
-}
-const card=(id,nm)=>`<div class="card"><div style="position:relative;height:300px"><canvas id="${id}"></canvas></div><div class="row"><button class="btn g" onclick="dl('${id}','${nm}')">Descargar imagen</button></div></div>`;
-const ttl=t=>({title:{display:true,text:t,font:{size:15}}});
-const axs=(x,y)=>({x:{title:{display:true,text:x}},y:{title:{display:true,text:y}}});
-const mk=(id,cfg)=>{cfg.options.maintainAspectRatio=false;CH.push(new Chart($(id),cfg))};
-function drawCharts(){
-  const w=$('gw');CH.forEach(c=>c.destroy());CH=[];
-  if(!D.num.length){w.innerHTML='<div class="card"><p class="msg">Primero carga datos en la sección Datos.</p></div>';return}
-  if(typeof Chart==='undefined'){w.innerHTML='<div class="card"><p class="msg">No se pudo cargar Chart.js. Conéctate a internet y recarga la página.</p></div>';return}
-  const R=findFin();R?finCharts(R,w):procCharts(w);
-}
-function finCharts(R,w){
-  const L=R.map(o=>o.l),cli=R.every(o=>isFinite(o.n)),hasP=R.some(o=>o.e),un='Valor (unidades de tu tabla)';
-  w.innerHTML=card('g1','ventas_vs_costos')+card('g2','utilidad_mensual')+(hasP?card('g3','participacion_por_producto'):'')+(cli?card('g4','clientes_nuevos_vs_ventas'):'')+
-    (hasP&&cli?'':'<p class="msg">Faltan columnas para mostrar todos los gráficos'+(hasP?'':' (producto)')+(cli?'':' (clientes nuevos)')+'.</p>');
-  const line=(l,d,c)=>({label:l,data:d,borderColor:c,backgroundColor:c,tension:.25});
-  mk('g1',{type:'line',data:{labels:L,datasets:[line('Ventas',R.map(o=>o.v),'#1b6a9c'),line('Costos',R.map(o=>o.c),'#f28c1e')]},options:{plugins:ttl('Ventas vs costos por mes'),scales:axs('Mes',un)}});
-  mk('g2',{type:'bar',data:{labels:L,datasets:[{label:'Utilidad',data:R.map(o=>o.u),backgroundColor:R.map(o=>o.u<0?'#d2453d':'#1d9a57')}]},options:{plugins:{...ttl('Utilidad mensual (ventas − costos − gastos)'),legend:{display:false}},scales:axs('Mes','Utilidad')}});
-  if(hasP){
-    const g={};R.forEach(o=>{if(o.e)g[o.e]=(g[o.e]||0)+o.v});
-    const k=Object.keys(g),tot=sm(k,x=>g[x]);
-    mk('g3',{type:'pie',data:{labels:k,datasets:[{data:k.map(x=>g[x]),backgroundColor:['#1b6a9c','#f28c1e','#1d9a57','#d2453d','#7a5ea8','#5a6a76','#c9a227']}]},
-      options:{plugins:{title:{display:true,text:['Participación por producto','(ventas de los meses en que fue el producto estrella)'],font:{size:15}},
-        tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.parsed)+' ('+fmt(c.parsed/tot*100)+' %)'}}}}});
-  }
-  if(cli){
-    const xs=R.map(o=>o.n),ys=R.map(o=>o.v),n=xs.length,mx=sm(xs,x=>x)/n,my=sm(ys,x=>x)/n;
-    const sxx=sm(xs,x=>(x-mx)**2),syy=sm(ys,y=>(y-my)**2);
-    let sp=0;xs.forEach((x,i)=>sp+=(x-mx)*(ys[i]-my));
-    const b=sxx?sp/sxx:0,a=my-b*mx,r2=sxx&&syy?sp*sp/(sxx*syy):0,x0=Math.min(...xs),x1=Math.max(...xs);
-    mk('g4',{type:'scatter',data:{datasets:[
-      {label:'Meses',data:R.map(o=>({x:o.n,y:o.v})),backgroundColor:'#1b6a9c',pointRadius:5},
-      {label:'Tendencia (R² = '+fmt(r2)+')',data:[{x:x0,y:a+b*x0},{x:x1,y:a+b*x1}],showLine:true,pointRadius:0,borderColor:'#f28c1e',borderWidth:2}]},
-      options:{plugins:ttl('Clientes nuevos vs ventas'),scales:axs('Clientes nuevos (por mes)','Ventas')}});
-  }
-}
-function procCharts(w){
-  const d=series(col());if(!d.length)return;
-  const{lim,meta,u,fuera}=ctx(),a=d.map(o=>o.v),L=d.map(o=>o.l),vn=S.cfg.variable||D.h[col()],yl=vn+(u?' ('+u.trim()+')':'');
-  w.innerHTML=card('g1','valores_en_orden')+card('g2','histograma');
-  const ds=[{label:D.h[col()],data:a,borderColor:'#1b6a9c',backgroundColor:'#1b6a9c',pointBackgroundColor:a.map(v=>fuera(v)?'#d2453d':'#1b6a9c'),pointRadius:4,tension:.15}];
-  if(!isNaN(lim))ds.push({label:'Límite',data:L.map(()=>lim),borderColor:'#d2453d',borderDash:[6,4],pointRadius:0});
-  if(!isNaN(meta))ds.push({label:'Meta',data:L.map(()=>meta),borderColor:'#1d9a57',borderDash:[6,4],pointRadius:0});
-  mk('g1',{type:'line',data:{labels:L,datasets:ds},options:{plugins:ttl('Valores en el orden de toma (rojo = fuera del límite)'),scales:axs(D.lab>=0?D.h[D.lab]:'Registro (orden de toma)',yl)}});
-  const k=Math.max(4,Math.ceil(Math.sqrt(a.length)));let lo=Math.min(...a),hi=Math.max(...a);if(hi===lo){lo-=1;hi+=1}
-  const bw=(hi-lo)/k,C=Array(k).fill(0);a.forEach(v=>C[Math.min(k-1,Math.floor((v-lo)/bw))]++);
-  mk('g2',{type:'bar',data:{labels:C.map((_,i)=>fmt(lo+i*bw)+' – '+fmt(lo+(i+1)*bw)),datasets:[{label:'Registros',data:C,backgroundColor:'#f28c1e'}]},
-    options:{plugins:{...ttl('Distribución de los valores (histograma)'),legend:{display:false}},scales:axs(yl,'Frecuencia (número de registros)')}});
-}
-
-function go(t){
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id==='s-'+t));
-  if(t==='est')renderEst();if(t==='graf')drawCharts();if(t==='rec')renderRec();
-  window.scrollTo(0,0);
-}
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
-['empresa','variable','unidad','mejor','lim','meta'].forEach(k=>$(k).addEventListener('input',readCfg));
-$('col').onchange=()=>{renderEst()};
-$('bUsar').onclick=()=>apply($('txt').value.trim(),'Datos cargados y guardados.');
-$('bEj').onclick=()=>{$('lim').value='';$('meta').value='';readCfg();apply(EJ,'Ejemplo cargado (límite y meta vaciados).')};
-$('bBor').onclick=()=>{apply('','');$('txt').value='';$('msg').textContent='Datos borrados.'};
-$('file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
-  if(!/\.(csv|txt|tsv)$/i.test(f.name)){$('msg').textContent='«'+f.name+'» no es un CSV. Elige el archivo que termina en .csv.';return}
-  const r=new FileReader();r.onload=()=>apply(String(r.result).trim(),'Archivo «'+f.name+'» cargado.');r.readAsText(f,'utf-8')};
-
-load();
-['empresa','variable','unidad','mejor','lim','meta'].forEach(k=>$(k).value=S.cfg[k]);
-head();
-if(S.csv&&bad(S.csv)){S.csv='';save()}
-if(S.csv)apply(S.csv,'Datos recuperados de este navegador.');
+function useText(text){const vals=parseValues(text);if(!vals.length){datos=[];render();setStatus('No se encontraron valores numéricos. Revisa el archivo o pega una columna de tiempos.','bad');return}datos=vals;render();setStatus('Se cargaron '+datos.length+' mediciones correctamente. Verifica que correspondan a la variable y unidad de tu ficha.','good');}
+$('archivo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{useText(await f.text())}catch(err){setStatus('No se pudo leer el archivo. Intenta guardarlo como CSV o TXT.','bad')}});
+$('procesar').addEventListener('click',()=>useText($('pegarDatos').value));
+$('limpiar').addEventListener('click',()=>{datos=[];$('pegarDatos').value='';$('archivo').value='';render();setStatus('Datos limpiados. Carga tu archivo o pega las mediciones.');});
+$('ejemplo').addEventListener('click',()=>{const ex=[21.4,23.1,24.2,20.8,22.5,26.1,21.7,24.6,23.3,19.8,22.1,25.4,20.9,21.8,24.9,23.7,22.8,20.5,26.4,21.2,23.9,22.4,24.1,19.9,25.7,21.6,22.9,23.5,20.7,24.4,21.9,23.2];$('pegarDatos').value=ex.join('\n');useText($('pegarDatos').value);setStatus('Ejemplo ilustrativo cargado (32 valores ficticios). No uses estos resultados como si fueran los datos reales de tu caso.','bad')});
+['limite','meta','unidad'].forEach(id=>$(id).addEventListener('change',render));
+['reduccion','variabilidad'].forEach(id=>$(id).addEventListener('input',()=>updateSim(datos.length?stats(datos):null)));
+document.querySelectorAll('[data-r]').forEach(b=>b.addEventListener('click',()=>{$('reduccion').value=b.dataset.r;$('variabilidad').value=b.dataset.v;updateSim(datos.length?stats(datos):null)}));
+$('menuBtn').addEventListener('click',()=>$('navlinks').classList.toggle('open'));document.querySelectorAll('.navlinks a').forEach(a=>a.addEventListener('click',()=>$('navlinks').classList.remove('open')));
+render();
 </script>
-</body>
-</html>
+</body></html>
