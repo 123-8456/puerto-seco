@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Análisis estadístico · Puerto Seco</title>
+<style>
+:root{--navy:#0f2f46;--blue:#1b6a9c;--or:#f28c1e;--bg:#eef2f5;--tx:#17252f;--mut:#5a6a76;--ok:#1d9a57;--bad:#d2453d;--ln:#d5dee5}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.45}
+header{background:var(--navy);color:#fff;padding:16px 16px 10px;border-bottom:4px solid var(--or)}
+header h1{margin:0;font-size:1.2rem}
+header small{color:#a9bfce}
+nav{display:flex;background:var(--navy);position:sticky;top:0;z-index:5;overflow-x:auto}
+nav button{flex:1;min-width:96px;background:none;border:0;color:#a9bfce;padding:12px 6px;font:inherit;border-bottom:3px solid transparent;cursor:pointer}
+nav button.on{color:#fff;border-color:var(--or);font-weight:700}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--or);outline-offset:1px}
+main{max-width:980px;margin:0 auto;padding:14px}
+section{display:none}section.on{display:block}
+.card{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:14px;margin-bottom:14px}
+h2{margin:0 0 10px;font-size:1.05rem;color:var(--navy)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label{font-size:.8rem;color:var(--mut);display:block;margin-bottom:3px}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--ln);border-radius:6px;font:inherit;background:#fff}
+textarea{min-height:110px;font-family:ui-monospace,Consolas,monospace;font-size:.8rem}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:6px;padding:10px 14px;font:inherit;cursor:pointer}
+.btn.o{background:var(--or);color:#1b1100}.btn.g{background:#e3ebf1;color:var(--navy)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tw{overflow:auto;max-height:340px}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{padding:6px 10px;border-bottom:1px solid var(--ln);text-align:left;white-space:nowrap}
+th{background:#e8eff4;position:sticky;top:0}
+.kpi{background:#f5f8fa;border:1px solid var(--ln);border-left:4px solid var(--blue);border-radius:6px;padding:10px}
+.kpi b{display:block;font-size:1.3rem;color:var(--navy)}.kpi span{font-size:.78rem;color:var(--mut)}
+.kpi.ok{border-left-color:var(--ok)}.kpi.ok b{color:var(--ok)}
+.kpi.bad{border-left-color:var(--bad)}.kpi.bad b{color:var(--bad)}
+canvas{width:100%;height:260px;display:block}
+.rec{border-left:4px solid var(--or);padding:8px 12px;margin:8px 0;background:#fff6ea;border-radius:0 6px 6px 0}
+.rec.ok{border-color:var(--ok);background:#eef9f2}.rec.bad{border-color:var(--bad);background:#fdf0ef}
+.msg{font-size:.85rem;color:var(--mut);margin-top:8px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}ul{padding-left:18px;margin:0}li{margin-bottom:8px}.pill{display:inline-block;font-size:.72rem;padding:1px 9px;border-radius:10px;color:#fff;background:var(--blue)}.pill.Alta{background:var(--bad)}.pill.Media{background:var(--or);color:#1b1100}.pill.Baja{background:var(--ok)}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<header><h1 id="ttl">Análisis estadístico</h1><small id="sub"></small></header>
+<nav>
+<button data-t="datos" class="on">Datos</button>
+<button data-t="est">Estadística</button>
+<button data-t="graf">Gráficos</button>
+<button data-t="rec">Recomendaciones</button>
+</nav>
+<main>
+<section id="s-datos" class="on">
+<div class="card"><h2>Datos de la empresa y del proceso</h2>
+<div class="grid">
+<div><label for="empresa">Empresa</label><input id="empresa"></div>
+<div><label for="variable">Variable</label><input id="variable"></div>
+<div><label for="unidad">Unidad</label><input id="unidad"></div>
+<div><label for="mejor">¿Qué es mejor?</label><select id="mejor"><option value="menor">Menor valor</option><option value="mayor">Mayor valor</option></select></div>
+<div><label for="lim">Límite de especificación</label><input id="lim" type="number" step="any"></div>
+<div><label for="meta">Meta de la empresa</label><input id="meta" type="number" step="any"></div>
+</div></div>
+<div class="card"><h2>Cargar datos (CSV)</h2>
+<label for="txt">Pega aquí tus datos (con o sin encabezado; separa con coma o punto y coma)</label>
+<textarea id="txt" placeholder="pedido,tiempo_min&#10;1,23.5&#10;2,26.1"></textarea>
+<div class="row">
+<button class="btn o" id="bUsar">Usar datos pegados</button>
+<label class="btn g" style="margin:0">Cargar archivo…<input id="file" type="file" accept=".csv,.txt,text/csv" hidden></label>
+<button class="btn g" id="bEj">Ver ejemplo (12 meses)</button>
+<button class="btn g" id="bBor">Borrar datos</button>
+</div>
+<div class="msg" id="msg">Los datos se guardan solo en este navegador.</div></div>
+<div class="card"><h2>Tabla de datos</h2><div class="tw" id="tabla"><p class="msg">Aún no hay datos.</p></div></div>
+</section>
+
+<section id="s-est">
+<div class="card"><h2>Estadística descriptiva</h2>
+<label for="col">Columna a analizar</label><select id="col"></select>
+<div class="grid" id="kp" style="margin-top:12px"></div></div>
+</section>
+
+<section id="s-graf"><div id="gw"></div></section>
+
+<section id="s-rec">
+<div class="card"><h2>Recomendaciones según tus datos</h2><div id="rc"></div></div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=x=>Number(x).toLocaleString('es-CO',{maximumFractionDigits:2});
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const S={csv:'',cfg:{empresa:'Centro Logístico Puerto Seco S.A.S.',variable:'Tiempo de alistamiento por pedido',unidad:'min',mejor:'menor',lim:'25',meta:'22'}};
+let D={h:[],r:[],num:[],sep:',',lab:-1};
+const EJ="mes,ventas,costos,gastos_operativos,clientes_nuevos,clientes_perdidos,producto_estrella\n2025-01,310,205,70,8,5,Picking estándar\n2025-02,285,190,68,6,4,Picking estándar\n2025-03,330,216,71,9,5,Picking estándar\n2025-04,345,225,72,10,6,Empaque y etiquetado\n2025-05,390,252,75,14,6,Picking express\n2025-06,405,262,77,12,7,Picking express\n2025-07,360,238,78,8,8,Picking estándar\n2025-08,340,232,80,7,9,Picking estándar\n2025-09,355,247,84,9,11,Almacenamiento\n2025-10,400,288,90,13,13,Picking express\n2025-11,480,360,105,18,14,Picking express\n2025-12,520,405,120,20,17,Picking express";
+
+function save(){try{localStorage.setItem('ps_app',JSON.stringify(S))}catch(e){}}
+function load(){try{const x=JSON.parse(localStorage.getItem('ps_app'));if(x){S.csv=x.csv||'';Object.assign(S.cfg,x.cfg)}}catch(e){}}
+const toN=(v,sep)=>Number(sep===';'?String(v).replace(',','.'):v);
+
+function parse(t){
+  t=t.replace(/^\uFEFF/,'');
+  const L=t.split(/\r?\n/).filter(l=>l.trim());
+  if(!L.length)return{h:[],r:[],num:[],sep:',',lab:-1};
+  const c=(s,ch)=>s.split(ch).length;
+  const sep=c(L[0],';')>c(L[0],',')?';':c(L[0],'\t')>c(L[0],',')?'\t':',';
+  const r=L.map(l=>l.split(sep).map(x=>x.trim().replace(/^"|"$/g,'')));
+  const N=v=>v!==''&&v!==undefined&&!isNaN(toN(v,sep));
+  let h;
+  if(r[0].every(N))h=r[0].map((_,i)=>r[0].length>1?'col'+(i+1):'valor');else h=r.shift();
+  const num=h.map((_,j)=>j).filter(j=>r.length&&r.filter(x=>N(x[j])).length>=0.7*r.length);
+  const lab=h.map((_,j)=>j).find(j=>!num.includes(j));
+  return{h,r,num,sep,lab:lab===undefined?-1:lab};
+}
+function series(j){
+  const o=[];
+  D.r.forEach((x,i)=>{if(x[j]!==''&&x[j]!==undefined&&!isNaN(toN(x[j],D.sep)))o.push({v:toN(x[j],D.sep),l:D.lab>=0?x[D.lab]:String(i+1)})});
+  return o;
+}
+const col=()=>+$('col').value;
+function st(a){
+  const n=a.length,m=a.reduce((p,c)=>p+c,0)/n,s=[...a].sort((p,c)=>p-c);
+  const md=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;
+  const sd=n>1?Math.sqrt(a.reduce((p,c)=>p+(c-m)**2,0)/(n-1)):0;
+  return{n,m,md,sd,mn:s[0],mx:s[n-1],cv:m?sd/m*100:0};
+}
+function slope(a){
+  const n=a.length,mx=(n-1)/2,my=a.reduce((p,c)=>p+c,0)/n;
+  let nu=0,de=0;a.forEach((y,i)=>{nu+=(i-mx)*(y-my);de+=(i-mx)**2});
+  return de?nu/de:0;
+}
+function ctx(){
+  const c=S.cfg,lim=parseFloat(c.lim),meta=parseFloat(c.meta),menor=c.mejor==='menor';
+  return{c,lim,meta,menor,u:c.unidad?' '+c.unidad:'',fuera:v=>!isNaN(lim)&&(menor?v>lim:v<lim)};
+}
+
+function head(){
+  $('ttl').textContent=S.cfg.empresa||'Análisis estadístico';
+  $('sub').textContent='Variable: '+(S.cfg.variable||'—')+(S.cfg.unidad?' ('+S.cfg.unidad+')':'');
+}
+function readCfg(){
+  ['empresa','variable','unidad','mejor','lim','meta'].forEach(k=>S.cfg[k]=$(k).value);
+  save();head();
+}
+function bad(t){return /^(%PDF|PK\u0003\u0004)/.test(t)||/\u0000/.test(t)||(t.match(/\uFFFD/g)||[]).length>5}
+function apply(t,msg){
+  if(t&&bad(t)){$('msg').textContent='Ese contenido no es un CSV (parece un PDF u otro formato). Carga el archivo .csv de tu ficha.';return}
+  S.csv=t;D=parse(t);save();$('txt').value=t;
+  $('col').innerHTML=D.num.map(j=>`<option value="${j}">${esc(D.h[j])}</option>`).join('');
+  if(!D.h.length){$('tabla').innerHTML='<p class="msg">Aún no hay datos.</p>';$('msg').textContent='Los datos se guardan solo en este navegador.';return}
+  $('tabla').innerHTML='<table><tr>'+D.h.map(x=>`<th>${esc(x)}</th>`).join('')+'</tr>'+
+    D.r.map(r=>'<tr>'+D.h.map((_,j)=>`<td>${esc(r[j]??'')}</td>`).join('')+'</tr>').join('')+'</table>';
+  $('msg').textContent=(msg||'Datos guardados en este navegador.')+` ${D.r.length} filas, ${D.h.length} columnas, ${D.num.length} numéricas.`;
+}
+
+function renderEst(){
+  const b=$('kp');
+  if(!D.num.length){b.innerHTML='<p class="msg">Primero carga datos en la sección Datos.</p>';return}
+  const a=series(col()).map(o=>o.v);if(!a.length)return;
+  const s=st(a),{lim,meta,menor,u,fuera}=ctx(),K=[];
+  K.push(['Registros',s.n],['Promedio',fmt(s.m)+u],['Mediana',fmt(s.md)+u],['Desviación estándar',fmt(s.sd)+u],
+    ['Mínimo',fmt(s.mn)+u],['Máximo',fmt(s.mx)+u],['Variación (CV)',fmt(s.cv)+' %']);
+  if(!isNaN(meta)){const ok=menor?s.m<=meta:s.m>=meta;K.push(['Promedio vs meta ('+fmt(meta)+')',ok?'Cumple':'No cumple',ok?'ok':'bad'])}
+  if(!isNaN(lim)){
+    const o=a.filter(fuera).length,p=o/s.n*100;
+    K.push(['Fuera del límite ('+fmt(lim)+')',o+' de '+s.n+' ('+fmt(p)+' %)',o?'bad':'ok']);
+    if(s.sd>0){const cpk=(menor?lim-s.m:s.m-lim)/(3*s.sd);K.push(['Cpk (un solo límite)',fmt(cpk),cpk>=1.33?'ok':cpk<1?'bad':''])}
+  }
+  b.innerHTML=K.map(k=>`<div class="kpi ${k[2]||''}"><b>${k[1]}</b><span>${k[0]}</span></div>`).join('');
+}
+
+const nrm=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const sm=(a,f)=>a.reduce((p,o)=>p+f(o),0);
+const pc=(x,y)=>y?(x/y-1)*100:0;
+const kpi=(l,v,c)=>`<div class="kpi ${c||''}"><b>${v}</b><span>${l}</span></div>`;
+function findFin(){
+  const f=re=>D.num.find(j=>re.test(nrm(D.h[j])));
+  const v=f(/venta|ingreso/),c=f(/^costo/),g=f(/gasto/),n=f(/nuevo/),p=f(/perdid/);
+  if(v===undefined||c===undefined)return null;
+  const pe=D.h.findIndex(h=>/producto/.test(nrm(h)));
+  const num=(x,j)=>j===undefined?NaN:toN(x[j],D.sep);
+  const R=D.r.map((x,i)=>({l:esc(D.lab>=0?x[D.lab]:i+1),v:num(x,v),c:num(x,c),g:g===undefined?0:num(x,g),n:num(x,n),p:num(x,p),e:pe>=0?esc(x[pe]||''):''}))
+    .filter(o=>isFinite(o.v)&&isFinite(o.c)&&isFinite(o.g));
+  R.forEach(o=>o.u=o.v-o.c-o.g);
+  return R.length>=4?R:null;
+}
+function diagFin(R){
+  const n=R.length,k=Math.min(3,Math.floor(n/2)),A=R.slice(0,k),B=R.slice(-k);
+  const V=sm(R,o=>o.v),C=sm(R,o=>o.c),U=sm(R,o=>o.u),cli=R.every(o=>isFinite(o.n)&&isFinite(o.p));
+  const cr=a=>sm(a,o=>o.c)/sm(a,o=>o.v)*100,mg=a=>sm(a,o=>o.u)/sm(a,o=>o.v)*100;
+  const best=[...R].sort((x,y)=>y.v-x.v)[0],worst=[...R].sort((x,y)=>x.v-y.v)[0],bu=[...R].sort((x,y)=>y.u-x.u)[0];
+  const neg=R.filter(o=>o.u<0),pos=R.filter(o=>o.u>0),gv=pc(sm(B,o=>o.v),sm(A,o=>o.v));
+  const S1=[],W1=[];
+  if(gv>0)S1.push(`Las ventas de los últimos ${k} meses son ${fmt(gv)} % mayores que las de los primeros ${k}.`);
+  if(U>0)S1.push(`La utilidad total del período es ${fmt(U)}, un margen de ${fmt(U/V*100)} % sobre las ventas.`);
+  S1.push(`Mejor mes en ventas: ${best.l} con ${fmt(best.v)}.`);
+  if(cli){const N=sm(R,o=>o.n);S1.push(`Captaste ${fmt(N)} clientes nuevos en ${n} meses, unos ${fmt(N/n)} por mes.`)}
+  S1.push(`Mejor utilidad: ${bu.l} con ${fmt(bu.u)} (${fmt(bu.u/bu.v*100)} % de sus ventas).`,`${pos.length} de ${n} meses cerraron con utilidad positiva.`);
+  if(cr(B)>cr(A)+2)W1.push(`Los costos pasaron de ${fmt(cr(A))} % de las ventas (primeros ${k} meses) a ${fmt(cr(B))} % (últimos ${k}).`);
+  if(cli){const p1=sm(A,o=>o.p),p2=sm(B,o=>o.p);
+    if(p2>p1)W1.push(`Los clientes perdidos subieron de ${fmt(p1)} (primeros ${k} meses) a ${fmt(p2)} (últimos ${k}), ${fmt(pc(p2,p1))} % más.`);
+    const nv=R.filter(o=>o.n<o.p);
+    if(nv.length)W1.push(`En ${nv.length} mes(es) perdiste más clientes de los que ganaste: ${nv.map(o=>o.l).join(', ')}.`)}
+  if(mg(B)<mg(A)-1)W1.push(`El margen de utilidad cayó de ${fmt(mg(A))} % a ${fmt(mg(B))} %${gv>0?' aunque las ventas subieron '+fmt(gv)+' %':''}.`);
+  if(neg.length)W1.push(`Hay ${neg.length} mes(es) con pérdida: ${neg.map(o=>o.l+' ('+fmt(o.u)+')').join(', ')}.`);
+  const g1=sm(A,o=>o.g),g2=sm(B,o=>o.g);
+  if(g1>0&&pc(g2,g1)>gv)W1.push(`Los gastos operativos crecieron ${fmt(pc(g2,g1))} %, más que las ventas (${fmt(gv)} %).`);
+  W1.push(`Mes más débil en ventas: ${worst.l} con ${fmt(worst.v)}, ${fmt((1-worst.v/best.v)*100)} % menos que el mejor mes.`,`Las ventas varían ${fmt(best.v-worst.v)} entre el mejor y el peor mes.`,`La utilidad más baja fue en ${[...R].sort((x,y)=>x.u-y.u)[0].l}.`);
+  return[S1,W1];
+}
+function altsFin(R){
+  const n=R.length,k=Math.min(3,Math.floor(n/2)),A=R.slice(0,k),B=R.slice(-k);
+  const V=sm(R,o=>o.v),C=sm(R,o=>o.c),G=sm(R,o=>o.g),mv=V/n,cm=(V-C)/V,cli=R.every(o=>isFinite(o.n)&&isFinite(o.p));
+  const low=[...R].sort((x,y)=>x.v-y.v).slice(0,3),cnt={};
+  R.forEach(o=>{if(o.e)cnt[o.e]=(cnt[o.e]||0)+1});
+  const star=Object.keys(cnt).sort((x,y)=>cnt[y]-cnt[x])[0],L=[];
+  L.push({t:'Bajar los costos directos 3 %',que:`Renegociar con proveedores y reducir horas extra. Hoy los costos son ${fmt(C/V*100)} % de las ventas (${fmt(sm(B,o=>o.c)/sm(B,o=>o.v)*100)} % en los últimos ${k} meses).`,costo:.02*mv,imp:.03*C});
+  if(cli&&sm(R,o=>o.n)>0){const P=sm(R,o=>o.p),N=sm(R,o=>o.n),sv=.25*P;
+    L.push({t:'Retener clientes: perder 25 % menos',que:`Hacer seguimiento posventa y llamar a los clientes que reducen su compra. Perdiste ${fmt(P)} clientes en ${n} meses (${fmt(P/N*100)} % de los ${fmt(N)} que captaste); retener 25 % es salvar unos ${fmt(sv)}.`,costo:.03*mv,imp:sv*(V/N)*cm,nota:' (estimado: ventas del período ÷ clientes nuevos, por tu margen de contribución)'})}
+  else{const w=[...R].sort((x,y)=>y.c/y.v-x.c/x.v)[0],av=C/V;
+    L.push({t:'Corregir el mes con costos más altos',que:`${w.l} tuvo costos de ${fmt(w.c/w.v*100)} % de sus ventas frente a ${fmt(av*100)} % del promedio. Revisar horas extra y compras de ese mes.`,costo:.01*mv,imp:Math.max(0,w.c-av*w.v)})}
+  L.push({t:'Subir precios 2 %',que:`Ajustar tarifas${star?', empezando por '+star:''}. Con ventas de ${fmt(V)}, cada 1 % de aumento suma ${fmt(V*.01)} si no pierdes clientes.`,costo:.005*mv,imp:.02*V});
+  const g1=sm(A,o=>o.g)/k,g2=sm(B,o=>o.g)/k,d=g2>g1?(g2-g1)*n:.05*G;
+  L.push({t:'Controlar los gastos operativos',que:`Congelar los gastos en el nivel de los primeros ${k} meses (${fmt(g1)} por mes). Hoy están en ${fmt(g2)} por mes.`,costo:.01*mv,imp:d});
+  L.push({t:'Promoción en los meses flojos',que:`Lanzar una campaña${star?' de '+star:''} en ${low.map(o=>o.l).join(', ')}, los meses más débiles, para subir sus ventas 10 %.`,costo:.02*mv,imp:.1*sm(low,o=>o.v)*cm});
+  return L.map(x=>({t:x.t,que:x.que,costo:'≈ '+fmt(x.costo)+' (estimado)',imp:'+'+fmt(x.imp)+' de utilidad en el período'+(x.nota||''),score:x.imp/Math.max(x.costo,1e-9)}));
+}
+function simProc(a,rp,rv){
+  const s=st(a),{menor,lim,fuera}=ctx(),dir=menor?1:-1;
+  const b=a.map(v=>s.m*(1-rp*dir)+(v-s.m)*(1-rv)),t=st(b);
+  return{m:t.m,sd:t.sd,out:isNaN(lim)?NaN:b.filter(fuera).length/b.length*100,cpk:t.sd>0&&!isNaN(lim)?(menor?lim-t.m:t.m-lim)/(3*t.sd):NaN};
+}
+function diagProc(d){
+  const a=d.map(o=>o.v),s=st(a),{lim,meta,menor,u,fuera}=ctx(),out=d.filter(o=>fuera(o.v));
+  const sr=[...d].sort((x,y)=>menor?x.v-y.v:y.v-x.v),best=sr[0],worst=sr[sr.length-1];
+  const cpk=s.sd>0&&!isNaN(lim)?(menor?lim-s.m:s.m-lim)/(3*s.sd):NaN,tr=slope(a)*(s.n-1)/s.m*100,mal=menor?tr>0:tr<0;
+  const ok=!isNaN(meta)&&(menor?s.m<=meta:s.m>=meta),S1=[],W1=[];
+  if(ok)S1.push(`El promedio (${fmt(s.m)}${u}) cumple la meta de ${fmt(meta)}${u}, con ${fmt(Math.abs(s.m-meta))}${u} de margen.`);
+  if(!isNaN(lim)&&out.length<=s.n/2)S1.push(`${s.n-out.length} de ${s.n} registros (${fmt((s.n-out.length)/s.n*100)} %) están dentro del límite de ${fmt(lim)}${u}.`);
+  if(cpk>=1)S1.push(`El Cpk es ${fmt(cpk)}: el proceso es capaz de cumplir el límite.`);
+  if(s.cv<=15)S1.push(`Los valores son parejos: la variación (CV) es de solo ${fmt(s.cv)} %.`);
+  if(Math.abs(tr)>5&&!mal)S1.push(`La tendencia mejora: el valor ${tr>0?'sube':'baja'} ${fmt(Math.abs(tr))} % a lo largo de la muestra.`);
+  S1.push(`Mejor registro: ${esc(best.l)} con ${fmt(best.v)}${u}.`,`La mediana es ${fmt(s.md)}${u}, el valor típico del proceso.`,`Hay ${s.n} registros para analizar.`);
+  if(!isNaN(meta)&&!ok)W1.push(`El promedio (${fmt(s.m)}${u}) no cumple la meta de ${fmt(meta)}${u}: está ${fmt(Math.abs(s.m-meta))}${u} ${menor?'por encima':'por debajo'}.`);
+  if(out.length)W1.push(`${out.length} de ${s.n} registros (${fmt(out.length/s.n*100)} %) están fuera del límite de ${fmt(lim)}${u}; el peor es ${esc(worst.l)} con ${fmt(worst.v)}${u}.`);
+  if(cpk<1)W1.push(`El Cpk es ${fmt(cpk)} (menor que 1): el proceso no cumple el límite de forma estable.`);
+  if(s.cv>15)W1.push(`Los valores son poco parejos: el CV es ${fmt(s.cv)} % (desviación de ${fmt(s.sd)}${u}).`);
+  if(Math.abs(tr)>5&&mal)W1.push(`La tendencia empeora: el valor ${tr>0?'sube':'baja'} ${fmt(Math.abs(tr))} % a lo largo de la muestra.`);
+  W1.push(`Peor registro: ${esc(worst.l)} con ${fmt(worst.v)}${u}.`,`El rango entre el mejor y el peor registro es ${fmt(s.mx-s.mn)}${u}.`,`La desviación estándar es ${fmt(s.sd)}${u}.`);
+  return[S1,W1];
+}
+function altsProc(d){
+  const a=d.map(o=>o.v),{fuera,menor,u}=ctx(),b=simProc(a,0,0),out=d.filter(o=>fuera(o.v)).sort((x,y)=>menor?y.v-x.v:x.v-y.v);
+  const defs=[
+    ['Estandarizar el método de alistamiento','Definir una ruta y un orden fijos de recolección y capacitar a todo el personal en el mismo procedimiento.','Bajo (horas de capacitación y supervisión)',1,.03,.30],
+    ['Reubicar los productos por rotación','Poner los productos de mayor salida cerca de la zona de despacho y rotular los pasillos.','Medio (horas de reubicación y señalización)',2,.08,.05],
+    ['Alistar por zonas o por lotes','Dividir la bodega en zonas o agrupar pedidos parecidos para recorrer menos distancia.','Medio (rediseño de rutas y capacitación)',2,.10,.10],
+    ['Atacar las causas de los pedidos más lentos',out.length?`Revisar ${Math.min(out.length,5)} de los ${out.length} registros fuera del límite (${out.slice(0,5).map(o=>esc(o.l)+': '+fmt(o.v)).join(', ')}) y corregir qué los demoró.`:'Revisar los registros más lentos y corregir qué los demoró.','Bajo (tiempo del supervisor)',1,.02,.20],
+    ['Usar lector de código de barras o lista digital','Reducir búsquedas y errores con lectura de códigos de barras durante el alistamiento.','Alto (equipos y software)',3,.15,.15]];
+  return defs.map(([t,q,c,w,rp,rv])=>{
+    const s=simProc(a,rp,rv),g=(isNaN(b.out)?0:b.out-s.out)+(b.m-s.m)*(menor?1:-1)/b.m*100;
+    return{t,que:q,costo:c,imp:`El promedio pasaría de ${fmt(b.m)} a ${fmt(s.m)}${u}${isNaN(b.out)?'':' y los registros fuera del límite de '+fmt(b.out)+' % a '+fmt(s.out)+' %'}. Supuesto: ${rp*100} % de cambio en el promedio y ${rv*100} % menos variabilidad.`,score:g/w};
+  });
+}
+function altsHTML(L){
+  L.sort((x,y)=>y.score-x.score);
+  return L.slice(0,5).map((x,i)=>{const p=i<2?'Alta':i<4?'Media':'Baja';
+    return`<div class="rec"><b>${i+1}. ${x.t}</b> <span class="pill ${p}">Prioridad ${p}</span><br><b>Qué hacer:</b> ${x.que}<br><b>Costo estimado:</b> ${x.costo}<br><b>Impacto esperado:</b> ${x.imp}</div>`}).join('');
+}
+function simBuild(defs,calc,nota){
+  $('sim').innerHTML=defs.map((d,i)=>`<label for="r${i}">${d[0]}: <b id="o${i}">0</b> %</label><input type="range" id="r${i}" min="0" max="${d[1]}" value="0" style="margin-bottom:10px">`).join('')+'<div class="grid" id="so"></div><p class="msg">'+nota+'</p>';
+  const upd=()=>{const v=defs.map((_,i)=>+$('r'+i).value);v.forEach((x,i)=>$('o'+i).textContent=x);$('so').innerHTML=calc(v)};
+  defs.forEach((_,i)=>$('r'+i).addEventListener('input',upd));upd();
+}
+function simFin(R){
+  const V=sm(R,o=>o.v),C=sm(R,o=>o.c),G=sm(R,o=>o.g),U0=V-C-G;
+  simBuild([['Subir precios',20],['Bajar costos',20],['Aumentar clientes',30]],v=>{
+    const[p,c,k]=v.map(x=>x/100),V1=V*(1+p)*(1+k),U1=V1-C*(1-c)*(1+k)-G,d=U1-U0;
+    return kpi('Utilidad actual',fmt(U0))+kpi('Utilidad simulada',fmt(U1),U1>=U0?'ok':'bad')+kpi('Cambio',(d>=0?'+':'')+fmt(d),d>0?'ok':d<0?'bad':'')+kpi('Margen simulado',fmt(U1/V1*100)+' %');
+  },'Supuestos: más clientes sube ventas y costos en el mismo %; los gastos operativos no cambian; subir precios no hace perder clientes. Cifras de todo el período de la tabla.');
+}
+function simPro(a){
+  const b=simProc(a,0,0),{u}=ctx();
+  simBuild([['Reducir el promedio',30],['Reducir la variabilidad',50]],v=>{
+    const s=simProc(a,v[0]/100,v[1]/100),ar=(x,y,f)=>fmt(x)+f+' → '+fmt(y)+f;
+    return kpi('Promedio',ar(b.m,s.m,u))+kpi('Desviación estándar',ar(b.sd,s.sd,u))+(isNaN(b.out)?'':kpi('Registros fuera del límite',ar(b.out,s.out,' %'),s.out<b.out?'ok':''))+(isNaN(b.cpk)?'':kpi('Cpk',ar(b.cpk,s.cpk,''),s.cpk>=1?'ok':''));
+  },'Simulación: mueve todos los registros para cambiar el promedio y acercarlos o alejarlos del promedio. Es una estimación, no una predicción.');
+}
+function renderRec(){
+  const b=$('rc');
+  if(!D.num.length){b.innerHTML='<p class="msg">Primero carga datos en la sección Datos.</p>';return}
+  const nom=esc(S.cfg.empresa||'tu empresa'),R=findFin();let dg,al,note,d;
+  if(R){dg=diagFin(R);al=altsFin(R);note='Análisis financiero de '+R.length+' períodos. Los costos de implementación son estimaciones (porcentajes de tu venta promedio) en las mismas unidades de tu tabla.'}
+  else{d=series(col());if(!d.length)return;dg=diagProc(d);al=altsProc(d);note='Análisis de «'+esc(D.h[col()])+'» con '+d.length+' registros. Los porcentajes de mejora son supuestos para comparar alternativas.'}
+  const li=a=>a.slice(0,3).map(x=>`<li>${x}</li>`).join('');
+  b.innerHTML=`<p class="msg">Diagnóstico automático para <b>${nom}</b>. ${note}</p><div class="g2"><div><h2>3 fortalezas</h2><ul>${li(dg[0])}</ul></div><div><h2>3 debilidades</h2><ul>${li(dg[1])}</ul></div></div><h2 style="margin-top:14px">5 alternativas de mejora para ${nom}</h2>${altsHTML(al)}<h2 style="margin-top:14px">Simulación</h2><div id="sim"></div>`;
+  R?simFin(R):simPro(d.map(o=>o.v));
+}
+
+let CH=[];
+function dl(id,nm){
+  const c=$(id),t=document.createElement('canvas');t.width=c.width;t.height=c.height;
+  const g=t.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,t.width,t.height);g.drawImage(c,0,0);
+  const a=document.createElement('a');a.href=t.toDataURL('image/png');a.download=nm+'.png';a.click();
+}
+const card=(id,nm)=>`<div class="card"><div style="position:relative;height:300px"><canvas id="${id}"></canvas></div><div class="row"><button class="btn g" onclick="dl('${id}','${nm}')">Descargar imagen</button></div></div>`;
+const ttl=t=>({title:{display:true,text:t,font:{size:15}}});
+const axs=(x,y)=>({x:{title:{display:true,text:x}},y:{title:{display:true,text:y}}});
+const mk=(id,cfg)=>{cfg.options.maintainAspectRatio=false;CH.push(new Chart($(id),cfg))};
+function drawCharts(){
+  const w=$('gw');CH.forEach(c=>c.destroy());CH=[];
+  if(!D.num.length){w.innerHTML='<div class="card"><p class="msg">Primero carga datos en la sección Datos.</p></div>';return}
+  if(typeof Chart==='undefined'){w.innerHTML='<div class="card"><p class="msg">No se pudo cargar Chart.js. Conéctate a internet y recarga la página.</p></div>';return}
+  const R=findFin();R?finCharts(R,w):procCharts(w);
+}
+function finCharts(R,w){
+  const L=R.map(o=>o.l),cli=R.every(o=>isFinite(o.n)),hasP=R.some(o=>o.e),un='Valor (unidades de tu tabla)';
+  w.innerHTML=card('g1','ventas_vs_costos')+card('g2','utilidad_mensual')+(hasP?card('g3','participacion_por_producto'):'')+(cli?card('g4','clientes_nuevos_vs_ventas'):'')+
+    (hasP&&cli?'':'<p class="msg">Faltan columnas para mostrar todos los gráficos'+(hasP?'':' (producto)')+(cli?'':' (clientes nuevos)')+'.</p>');
+  const line=(l,d,c)=>({label:l,data:d,borderColor:c,backgroundColor:c,tension:.25});
+  mk('g1',{type:'line',data:{labels:L,datasets:[line('Ventas',R.map(o=>o.v),'#1b6a9c'),line('Costos',R.map(o=>o.c),'#f28c1e')]},options:{plugins:ttl('Ventas vs costos por mes'),scales:axs('Mes',un)}});
+  mk('g2',{type:'bar',data:{labels:L,datasets:[{label:'Utilidad',data:R.map(o=>o.u),backgroundColor:R.map(o=>o.u<0?'#d2453d':'#1d9a57')}]},options:{plugins:{...ttl('Utilidad mensual (ventas − costos − gastos)'),legend:{display:false}},scales:axs('Mes','Utilidad')}});
+  if(hasP){
+    const g={};R.forEach(o=>{if(o.e)g[o.e]=(g[o.e]||0)+o.v});
+    const k=Object.keys(g),tot=sm(k,x=>g[x]);
+    mk('g3',{type:'pie',data:{labels:k,datasets:[{data:k.map(x=>g[x]),backgroundColor:['#1b6a9c','#f28c1e','#1d9a57','#d2453d','#7a5ea8','#5a6a76','#c9a227']}]},
+      options:{plugins:{title:{display:true,text:['Participación por producto','(ventas de los meses en que fue el producto estrella)'],font:{size:15}},
+        tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.parsed)+' ('+fmt(c.parsed/tot*100)+' %)'}}}}});
+  }
+  if(cli){
+    const xs=R.map(o=>o.n),ys=R.map(o=>o.v),n=xs.length,mx=sm(xs,x=>x)/n,my=sm(ys,x=>x)/n;
+    const sxx=sm(xs,x=>(x-mx)**2),syy=sm(ys,y=>(y-my)**2);
+    let sp=0;xs.forEach((x,i)=>sp+=(x-mx)*(ys[i]-my));
+    const b=sxx?sp/sxx:0,a=my-b*mx,r2=sxx&&syy?sp*sp/(sxx*syy):0,x0=Math.min(...xs),x1=Math.max(...xs);
+    mk('g4',{type:'scatter',data:{datasets:[
+      {label:'Meses',data:R.map(o=>({x:o.n,y:o.v})),backgroundColor:'#1b6a9c',pointRadius:5},
+      {label:'Tendencia (R² = '+fmt(r2)+')',data:[{x:x0,y:a+b*x0},{x:x1,y:a+b*x1}],showLine:true,pointRadius:0,borderColor:'#f28c1e',borderWidth:2}]},
+      options:{plugins:ttl('Clientes nuevos vs ventas'),scales:axs('Clientes nuevos (por mes)','Ventas')}});
+  }
+}
+function procCharts(w){
+  const d=series(col());if(!d.length)return;
+  const{lim,meta,u,fuera}=ctx(),a=d.map(o=>o.v),L=d.map(o=>o.l),vn=S.cfg.variable||D.h[col()],yl=vn+(u?' ('+u.trim()+')':'');
+  w.innerHTML=card('g1','valores_en_orden')+card('g2','histograma');
+  const ds=[{label:D.h[col()],data:a,borderColor:'#1b6a9c',backgroundColor:'#1b6a9c',pointBackgroundColor:a.map(v=>fuera(v)?'#d2453d':'#1b6a9c'),pointRadius:4,tension:.15}];
+  if(!isNaN(lim))ds.push({label:'Límite',data:L.map(()=>lim),borderColor:'#d2453d',borderDash:[6,4],pointRadius:0});
+  if(!isNaN(meta))ds.push({label:'Meta',data:L.map(()=>meta),borderColor:'#1d9a57',borderDash:[6,4],pointRadius:0});
+  mk('g1',{type:'line',data:{labels:L,datasets:ds},options:{plugins:ttl('Valores en el orden de toma (rojo = fuera del límite)'),scales:axs(D.lab>=0?D.h[D.lab]:'Registro (orden de toma)',yl)}});
+  const k=Math.max(4,Math.ceil(Math.sqrt(a.length)));let lo=Math.min(...a),hi=Math.max(...a);if(hi===lo){lo-=1;hi+=1}
+  const bw=(hi-lo)/k,C=Array(k).fill(0);a.forEach(v=>C[Math.min(k-1,Math.floor((v-lo)/bw))]++);
+  mk('g2',{type:'bar',data:{labels:C.map((_,i)=>fmt(lo+i*bw)+' – '+fmt(lo+(i+1)*bw)),datasets:[{label:'Registros',data:C,backgroundColor:'#f28c1e'}]},
+    options:{plugins:{...ttl('Distribución de los valores (histograma)'),legend:{display:false}},scales:axs(yl,'Frecuencia (número de registros)')}});
+}
+
+function go(t){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id==='s-'+t));
+  if(t==='est')renderEst();if(t==='graf')drawCharts();if(t==='rec')renderRec();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+['empresa','variable','unidad','mejor','lim','meta'].forEach(k=>$(k).addEventListener('input',readCfg));
+$('col').onchange=()=>{renderEst()};
+$('bUsar').onclick=()=>apply($('txt').value.trim(),'Datos cargados y guardados.');
+$('bEj').onclick=()=>{$('lim').value='';$('meta').value='';readCfg();apply(EJ,'Ejemplo cargado (límite y meta vaciados).')};
+$('bBor').onclick=()=>{apply('','');$('txt').value='';$('msg').textContent='Datos borrados.'};
+$('file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(!/\.(csv|txt|tsv)$/i.test(f.name)){$('msg').textContent='«'+f.name+'» no es un CSV. Elige el archivo que termina en .csv.';return}
+  const r=new FileReader();r.onload=()=>apply(String(r.result).trim(),'Archivo «'+f.name+'» cargado.');r.readAsText(f,'utf-8')};
+
+load();
+['empresa','variable','unidad','mejor','lim','meta'].forEach(k=>$(k).value=S.cfg[k]);
+head();
+if(S.csv&&bad(S.csv)){S.csv='';save()}
+if(S.csv)apply(S.csv,'Datos recuperados de este navegador.');
+</script>
+</body>
+</html>
